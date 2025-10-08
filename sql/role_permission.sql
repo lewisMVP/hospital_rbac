@@ -39,9 +39,3 @@ CREATE USER nurse_anna WITH PASSWORD '12345';
 CREATE USER reception_john WITH PASSWORD '12345';
 CREATE USER billing_mary WITH PASSWORD '12345';
 
---Gan vai tro
-GRANT admin TO sys_admin;
-GRANT doctor TO dr_smith;
-GRANT nurse TO nurse_anna;
-GRANT receptionist TO reception_john;
-GRANT billing TO billing_mary;
