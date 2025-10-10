@@ -1,0 +1,450 @@
+.role-matrix {
+  padding: 32px;
+  max-width: 1400px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #86868b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-btn:hover {
+  color: #1d1d1f;
+}
+
+.toggle-btn.active {
+  background: white;
+  color: #1d1d1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #007aff 0%, #0051d5 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+}
+
+.matrix-container {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.permission-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.permission-matrix thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.resource-header {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: #1d1d1f;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  min-width: 180px;
+  position: sticky;
+  left: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 11;
+}
+
+.role-header {
+  padding: 16px;
+  text-align: center;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  min-width: 120px;
+}
+
+.role-header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.role-header-name {
+  font-weight: 600;
+  color: #1d1d1f;
+  font-size: 14px;
+}
+
+.permission-count {
+  background: #007aff;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.resource-row {
+  background: rgba(0, 122, 255, 0.05);
+}
+
+.resource-name {
+  padding: 12px 20px;
+  font-weight: 600;
+  color: #1d1d1f;
+  position: sticky;
+  left: 0;
+  background: rgba(0, 122, 255, 0.05);
+  z-index: 5;
+}
+
+.resource-name-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resource-icon {
+  font-size: 16px;
+}
+
+.action-row {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background 0.2s ease;
+}
+
+.action-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.action-name {
+  padding: 12px 20px;
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 5;
+}
+
+.action-row:hover .action-name {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.action-badge {
+  display: inline-flex;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1d1d1f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.permission-cell {
+  text-align: center;
+  padding: 8px;
+}
+
+.permission-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.permission-toggle.granted {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+}
+
+.permission-toggle.denied {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.permission-toggle:hover {
+  transform: scale(1.1);
+}
+
+.permission-toggle.granted:hover {
+  background: rgba(52, 199, 89, 0.25);
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+}
+
+.permission-toggle.denied:hover {
+  background: rgba(255, 59, 48, 0.2);
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+}
+
+.toggle-icon {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Detailed View */
+.detailed-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.role-select-btn {
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.role-select-btn:hover {
+  border-color: #007aff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+}
+
+.role-select-btn.active {
+  background: linear-gradient(135deg, #007aff 0%, #0051d5 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+}
+
+.role-select-btn.active .role-select-name,
+.role-select-btn.active .role-select-count {
+  color: white;
+}
+
+.role-select-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.role-select-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.role-select-count {
+  font-size: 11px;
+  color: #86868b;
+  font-weight: 500;
+}
+
+.detailed-permissions {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.detailed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.detailed-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+.total-permissions {
+  font-size: 14px;
+  font-weight: 600;
+  color: #007aff;
+  background: rgba(0, 122, 255, 0.1);
+  padding: 6px 16px;
+  border-radius: 12px;
+}
+
+.resource-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.resource-card {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.resource-card.has-permissions {
+  border-color: rgba(52, 199, 89, 0.3);
+  background: rgba(52, 199, 89, 0.03);
+}
+
+.resource-card.no-permissions {
+  border-color: rgba(255, 59, 48, 0.2);
+  background: rgba(255, 59, 48, 0.02);
+}
+
+.resource-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.resource-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.resource-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resource-icon-large {
+  font-size: 24px;
+}
+
+.resource-title h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.permission-badge-count {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.permission-item.granted {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+}
+
+.permission-item.denied {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.permission-icon {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.permission-label {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+/* Scrollbar styling */
+.matrix-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.matrix-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.matrix-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.matrix-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
