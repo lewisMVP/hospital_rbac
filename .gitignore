@@ -1,0 +1,115 @@
+# ==================== SENSITIVE FILES ====================
+# ⚠️ NEVER commit these files!
+.env
+*.env
+.env.local
+.env.*.local
+
+# Secret keys and credentials
+secrets/
+*.key
+*.pem
+*.cert
+
+# ==================== PYTHON ====================
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# ==================== NODE.JS ====================
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production build
+dist/
+dist-ssr/
+*.local
+
+# ==================== DATABASES ====================
+# Database files (nếu dùng SQLite local)
+*.db
+*.sqlite
+*.sqlite3
+
+# Database backups
+database/backups/
+database/dumps/
+*.sql.backup
+*.dump
+
+# ==================== IDEs & EDITORS ====================
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ==================== OS FILES ====================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ==================== LOGS ====================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==================== TEMPORARY FILES ====================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ==================== MISC ====================
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+coverage/

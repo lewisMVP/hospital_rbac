@@ -1,5 +1,4 @@
 // API Service Layer for Hospital RBAC
-// Base URL - thay đổi theo backend của bạn
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 // Generic fetch wrapper with error handling
