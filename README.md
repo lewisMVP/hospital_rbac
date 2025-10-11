@@ -1,19 +1,19 @@
-# 🏥 Hospital RBAC System
+# Hospital RBAC System
 
 A modern, secure Role-Based Access Control (RBAC) system for hospital management with React frontend, Flask backend, and PostgreSQL database.
 
-## ✨ Features
+## Features
 
-- **🎨 Modern UI**: React-based interface with Apple-inspired design system
-- **🔐 RBAC Implementation**: Secure role-based access control (Admin, Doctor, Nurse, Receptionist, Billing)
-- **📊 Real-time Dashboard**: Statistics, activities, and role distribution monitoring
-- **👥 User Management**: Complete CRUD operations for users and roles
-- **🔑 Permission Matrix**: Visual permission management interface
-- **📝 Audit Logging**: Comprehensive tracking of all system activities
-- **🚨 Security Alerts**: Failed login detection and unauthorized access monitoring
-- **🗄️ PostgreSQL Backend**: Robust database with triggers and stored procedures
+- **Modern UI**: React-based interface with Apple-inspired design system
+- **RBAC Implementation**: Secure role-based access control (Admin, Doctor, Nurse, Receptionist, Billing)
+- **Real-time Dashboard**: Statistics, activities, and role distribution monitoring
+- **User Management**: Complete CRUD operations for users and roles
+- **Permission Matrix**: Visual permission management interface
+- **Audit Logging**: Comprehensive tracking of all system activities
+- **Security Alerts**: Failed login detection and unauthorized access monitoring
+- **PostgreSQL Backend**: Robust database with triggers and stored procedures
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **React 19.1.1** - UI framework
@@ -55,7 +55,7 @@ hospital_rbac/
 └── README.md
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -147,9 +147,9 @@ npm run dev
 
 **Open browser:** Navigate to [http://localhost:5173](http://localhost:5173)
 
-## 🔐 Security Best Practices
+## Security Best Practices
 
-### ⚠️ IMPORTANT - Before Pushing to Git
+### IMPORTANT - Before Pushing to Git
 
 1. **NEVER commit `.env` files** - They contain sensitive credentials
 2. **Always use `.env.example`** - Template files only
@@ -195,7 +195,7 @@ git add .gitignore
 git commit -m "Add .gitignore for security"
 ```
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Dashboard
 - `GET /api/dashboard/stats` - System statistics
@@ -225,7 +225,7 @@ git commit -m "Add .gitignore for security"
 - `GET /api/audit/alerts` - Security alerts
 - `GET /api/audit/failed-logins` - Failed login attempts
 
-## 🧪 Testing
+## Testing
 
 ### Test Database Functionality
 
@@ -246,7 +246,7 @@ curl http://localhost:5000/api/users
 curl http://localhost:5000/api/roles
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend won't start
 - Check PostgreSQL is running: `pg_isready`
@@ -272,14 +272,14 @@ curl http://localhost:5000/api/roles
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## 📚 Documentation
+## Documentation
 
 - **Database Schema**: See `database/sql/create_schema.sql`
 - **RBAC Design**: See `database/sql/role_permission.sql`
 - **Audit System**: See `database/sql/create_audit_table.sql`
 - **API Documentation**: See `server/README.md`
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
@@ -293,16 +293,13 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 - Update documentation if needed
 - Never commit `.env` files
 
-## 📄 License
 
-This project is open-source and available under the MIT License.
-
-## 👨‍💻 Author
+## Author
 
 **lewisMVP**
 - GitHub: [@lewisMVP](https://github.com/lewisMVP)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Apple Design System for UI inspiration
 - PostgreSQL documentation
@@ -311,7 +308,7 @@ This project is open-source and available under the MIT License.
 
 ---
 
-**⚠️ Security Notice**: This is a demonstration project. For production use, implement additional security measures including:
+**Security Notice**: This is a demonstration project. For production use, implement additional security measures including:
 - HTTPS/TLS encryption
 - JWT authentication
 - Rate limiting
@@ -321,4 +318,3 @@ This project is open-source and available under the MIT License.
 - CSRF tokens
 - Regular security audits
 
-**Made with ❤️ for secure healthcare systems**
