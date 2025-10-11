@@ -1,58 +1,105 @@
-import React from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import './Dashboard.css'
+import { dashboardAPI } from '../services/api'
+import LoadingSpinner from './LoadingSpinner'
+import ErrorMessage from './ErrorMessage'
 
 const Dashboard = () => {
-  const stats = [
-    { 
-      label: 'Total Users', 
-      value: '247', 
-      change: '+12%', 
-      trend: 'up',
-      icon: '👥',
-      color: '#007aff'
-    },
-    { 
-      label: 'Active Roles', 
-      value: '8', 
-      change: '+2', 
-      trend: 'up',
-      icon: '🔐',
-      color: '#34c759'
-    },
-    { 
-      label: 'Failed Logins', 
-      value: '23', 
-      change: '-15%', 
-      trend: 'down',
-      icon: '⚠️',
-      color: '#ff9500'
-    },
-    { 
-      label: 'Audit Entries', 
-      value: '1,847', 
-      change: '+89', 
-      trend: 'up',
-      icon: '📋',
-      color: '#5856d6'
-    },
-  ]
+  const [stats, setStats] = useState([])
+  const [recentActivities, setRecentActivities] = useState([])
+  const [roleDistribution, setRoleDistribution] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const recentActivities = [
-    { user: 'Dr. Sarah Johnson', action: 'Viewed patient record', time: '2 minutes ago', type: 'view' },
-    { user: 'Nurse Mike Chen', action: 'Updated medication', time: '15 minutes ago', type: 'update' },
-    { user: 'Admin John Doe', action: 'Created new user role', time: '1 hour ago', type: 'create' },
-    { user: 'Dr. Emily Brown', action: 'Deleted appointment', time: '2 hours ago', type: 'delete' },
-    { user: 'Receptionist Anna Lee', action: 'Scheduled appointment', time: '3 hours ago', type: 'create' },
-  ]
+  const loadDashboardData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-  const roleDistribution = [
-    { role: 'Doctor', count: 45, percentage: 18, color: '#007aff' },
-    { role: 'Nurse', count: 78, percentage: 32, color: '#34c759' },
-    { role: 'Receptionist', count: 56, percentage: 23, color: '#ff9500' },
-    { role: 'Admin', count: 12, percentage: 5, color: '#5856d6' },
-    { role: 'Billing', count: 34, percentage: 14, color: '#ff3b30' },
-    { role: 'Other', count: 22, percentage: 8, color: '#86868b' },
-  ]
+      // Load stats
+      const statsResponse = await dashboardAPI.getStats()
+      if (!statsResponse.success) {
+        throw new Error(statsResponse.error || 'Failed to load stats')
+      }
+      const statsData = statsResponse.data // Already unwrapped in api.js
+      
+      const statsArray = statsData.map(stat => ({
+        label: stat.label,
+        value: stat.value,
+        change: stat.change,
+        trend: stat.trend,
+        icon: stat.icon,
+        color: stat.color
+      }))
+      setStats(statsArray)
+
+      // Load recent activities
+      const activitiesResponse = await dashboardAPI.getRecentActivities()
+      if (activitiesResponse.success) {
+        const activitiesData = activitiesResponse.data || [] // Already unwrapped
+        const formattedActivities = activitiesData.map(activity => ({
+          user: activity.user || 'Unknown',
+          action: activity.details || activity.type || 'No action',
+          time: formatTimeAgo(activity.time),
+          type: getActionType(activity.type)
+        }))
+        setRecentActivities(formattedActivities)
+      }
+
+      // Load role distribution
+      const roleResponse = await dashboardAPI.getRoleDistribution()
+      if (roleResponse.success) {
+        const roleData = roleResponse.data || [] // Already unwrapped
+        const colors = ['#007aff', '#34c759', '#ff9500', '#5856d6', '#ff3b30', '#86868b']
+        const formattedRoles = roleData.map((role, index) => ({
+          role: role.name,
+          count: role.value,
+          percentage: Math.round((role.value / roleData.reduce((sum, r) => sum + r.value, 0)) * 100) || 0,
+          color: colors[index % colors.length]
+        }))
+        setRoleDistribution(formattedRoles)
+      }
+
+    } catch (err) {
+      console.error('Error loading dashboard data:', err)
+      setError(err.message || 'Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [loadDashboardData])
+
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date()
+    const then = new Date(timestamp)
+    const seconds = Math.floor((now - then) / 1000)
+    
+    if (seconds < 60) return 'just now'
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`
+    return `${Math.floor(seconds / 86400)} days ago`
+  }
+
+  const getActionType = (action) => {
+    if (!action) return 'view'
+    const actionLower = action.toLowerCase()
+    if (actionLower.includes('view') || actionLower.includes('read')) return 'view'
+    if (actionLower.includes('update') || actionLower.includes('edit')) return 'update'
+    if (actionLower.includes('create') || actionLower.includes('add')) return 'create'
+    if (actionLower.includes('delete') || actionLower.includes('remove')) return 'delete'
+    return 'view'
+  }
+
+  if (loading) {
+    return <LoadingSpinner />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={loadDashboardData} />
+  }
 
   return (
     <div className="dashboard">

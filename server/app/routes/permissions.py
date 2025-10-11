@@ -4,6 +4,27 @@ from app.utils.decorators import handle_errors
 
 bp = Blueprint('permissions', __name__, url_prefix='/api/permissions')
 
+@bp.route('/', methods=['GET'])
+@handle_errors
+def get_all_permissions():
+    """Get all permissions"""
+    query = """
+        SELECT 
+            permission_id,
+            resource_name,
+            action_name,
+            description
+        FROM permissions
+        ORDER BY resource_name, action_name
+    """
+    
+    permissions = execute_query(query)
+    
+    return jsonify({
+        'success': True,
+        'data': permissions
+    })
+
 @bp.route('/matrix', methods=['GET'])
 @handle_errors
 def get_permission_matrix():

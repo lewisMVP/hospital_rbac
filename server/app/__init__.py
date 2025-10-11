@@ -9,8 +9,17 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     
-    # Enable CORS for all routes
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # Disable strict slashes to prevent redirects
+    app.url_map.strict_slashes = False
+    
+    # Enable CORS for all routes with all methods
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     # Test database connection on startup
     try:

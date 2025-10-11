@@ -1,5 +1,5 @@
 // API Service Layer for Hospital RBAC
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 // Generic fetch wrapper with error handling
 async function fetchAPI(endpoint, options = {}) {
@@ -20,8 +20,14 @@ async function fetchAPI(endpoint, options = {}) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     
-    const data = await response.json()
-    return { success: true, data }
+    const result = await response.json()
+    
+    // Backend already returns {success, data} format
+    if (result.success) {
+      return { success: true, data: result.data }
+    } else {
+      throw new Error(result.message || 'API request failed')
+    }
   } catch (error) {
     console.error('API Error:', error)
     return { success: false, error: error.message }
@@ -133,20 +139,26 @@ export const permissionAPI = {
 
 // ==================== AUDIT APIs ====================
 export const auditAPI = {
+  // Lấy audit logs (alias cho compatibility)
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return fetchAPI(`/audit/${queryString ? `?${queryString}` : ''}`)
+  },
+  
   // Lấy audit logs
   getLogs: (params = {}) => {
     const queryString = new URLSearchParams(params).toString()
-    return fetchAPI(`/audit/logs${queryString ? `?${queryString}` : ''}`)
+    return fetchAPI(`/audit/${queryString ? `?${queryString}` : ''}`)
   },
   
-  // Lấy failed login attempts
+  // Lấy failed login attempts  
   getFailedLogins: (params = {}) => {
     const queryString = new URLSearchParams(params).toString()
     return fetchAPI(`/audit/failed-logins${queryString ? `?${queryString}` : ''}`)
   },
   
   // Lấy security alerts
-  getSecurityAlerts: () => fetchAPI('/audit/alerts'),
+  getSecurityAlerts: () => fetchAPI('/audit/security-alerts'),
   
   // Lấy audit statistics
   getStats: () => fetchAPI('/audit/stats'),

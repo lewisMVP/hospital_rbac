@@ -1,250 +1,223 @@
-import React, { useState } from 'react'
-import './AuditLog.css'
+import React, { useState } from 'react';
+import { useAPI } from '../hooks/useAPI';
+import { auditAPI } from '../services/api';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorMessage from './ErrorMessage';
+import './AuditLog.css';
 
 const AuditLog = () => {
-  const [selectedFilter, setSelectedFilter] = useState('all')
-  const [dateRange, setDateRange] = useState('today')
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterType, setFilterType] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const itemsPerPage = 10;
 
-  const auditLogs = [
-    { 
-      id: 1, 
-      timestamp: '2024-10-11 14:32:15', 
-      user: 'Dr. Sarah Johnson', 
-      action: 'SELECT', 
-      resource: 'MedicalRecords', 
-      status: 'Success',
-      ip: '192.168.1.45',
-      details: 'Viewed patient record #12345'
-    },
-    { 
-      id: 2, 
-      timestamp: '2024-10-11 14:28:03', 
-      user: 'Nurse Mike Chen', 
-      action: 'UPDATE', 
-      resource: 'Patients', 
-      status: 'Success',
-      ip: '192.168.1.67',
-      details: 'Updated medication for patient #12346'
-    },
-    { 
-      id: 3, 
-      timestamp: '2024-10-11 14:15:42', 
-      user: 'admin@hospital.com', 
-      action: 'GRANT', 
-      resource: 'Roles', 
-      status: 'Success',
-      ip: '192.168.1.100',
-      details: 'Added user to Doctor role'
-    },
-    { 
-      id: 4, 
-      timestamp: '2024-10-11 13:58:21', 
-      user: 'unknown@test.com', 
-      action: 'LOGIN', 
-      resource: 'Authentication', 
-      status: 'Failed',
-      ip: '203.45.67.89',
-      details: 'Invalid credentials - 3rd attempt'
-    },
-    { 
-      id: 5, 
-      timestamp: '2024-10-11 13:45:11', 
-      user: 'Dr. Emily Brown', 
-      action: 'DELETE', 
-      resource: 'Appointments', 
-      status: 'Success',
-      ip: '192.168.1.52',
-      details: 'Cancelled appointment #789'
-    },
-    { 
-      id: 6, 
-      timestamp: '2024-10-11 13:30:05', 
-      user: 'hacker@evil.com', 
-      action: 'SELECT', 
-      resource: 'MedicalRecords', 
-      status: 'Failed',
-      ip: '185.220.101.45',
-      details: 'Unauthorized access attempt'
-    },
-  ]
+  // Fetch data from API
+  const { data: auditLogs, loading, error } = useAPI(() => 
+    auditAPI.getAll({ 
+      page: currentPage, 
+      limit: itemsPerPage,
+      event_type: filterType !== 'all' ? filterType : undefined,
+      search: searchTerm || undefined
+    })
+  );
 
-  const securityAlerts = [
-    { 
-      id: 1, 
-      severity: 'high', 
-      message: 'Multiple failed login attempts from IP 203.45.67.89', 
-      count: 5,
-      timestamp: '14:30'
-    },
-    { 
-      id: 2, 
-      severity: 'medium', 
-      message: 'Unusual access pattern detected for user: Dr. Sarah Johnson', 
-      count: 1,
-      timestamp: '13:45'
-    },
-    { 
-      id: 3, 
-      severity: 'low', 
-      message: 'New user role created: Pharmacy', 
-      count: 1,
-      timestamp: '12:20'
-    },
-  ]
+  const { data: stats } = useAPI(auditAPI.getStats);
+  const { data: securityAlerts } = useAPI(auditAPI.getSecurityAlerts);
 
-  const stats = [
-    { label: 'Total Events', value: '1,847', icon: '📊', color: '#007aff' },
-    { label: 'Failed Logins', value: '23', icon: '⚠️', color: '#ff9500' },
-    { label: 'Unauthorized Access', value: '7', icon: '🚫', color: '#ff3b30' },
-    { label: 'Role Changes', value: '15', icon: '🔑', color: '#34c759' },
-  ]
+  // Filter logs - auditLogs is already the data array from useAPI
+  const filteredLogs = auditLogs?.filter(log => {
+    const matchesType = filterType === 'all' || log.event_type === filterType;
+    const matchesSearch = !searchTerm || 
+      log.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.event_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.table_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesType && matchesSearch;
+  }) || [];
 
-  const getStatusColor = (status) => {
-    return status === 'Success' ? 'success' : 'failed'
-  }
-
-  const getActionIcon = (action) => {
-    switch(action) {
-      case 'SELECT': return '👁️'
-      case 'INSERT': return '➕'
-      case 'UPDATE': return '✏️'
-      case 'DELETE': return '🗑️'
-      case 'GRANT': return '🔑'
-      case 'LOGIN': return '🔐'
-      default: return '📝'
-    }
-  }
+  const totalPages = Math.ceil((filteredLogs?.length || 0) / itemsPerPage);
 
   const getSeverityClass = (severity) => {
-    return `alert-${severity}`
-  }
+    const severityMap = {
+      'critical': 'severity-critical',
+      'high': 'severity-high',
+      'medium': 'severity-medium',
+      'low': 'severity-low'
+    };
+    return severityMap[severity?.toLowerCase()] || 'severity-low';
+  };
+
+  const getEventIcon = (eventType) => {
+    const iconMap = {
+      'LOGIN': '🔐',
+      'LOGOUT': '🚪',
+      'FAILED_LOGIN': '❌',
+      'INSERT': '➕',
+      'UPDATE': '✏️',
+      'DELETE': '🗑️',
+      'GRANT': '🔓',
+      'REVOKE': '🔒'
+    };
+    return iconMap[eventType] || '📝';
+  };
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage error={error} />;
 
   return (
     <div className="audit-log">
-      {/* Statistics */}
-      <div className="audit-stats">
-        {stats.map((stat, index) => (
-          <div key={index} className="audit-stat-card" style={{'--stat-color': stat.color}}>
-            <span className="stat-icon-large">{stat.icon}</span>
-            <div className="stat-info">
-              <h3 className="stat-value-large">{stat.value}</h3>
-              <p className="stat-label-small">{stat.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="audit-content">
-        {/* Security Alerts */}
+      {/* Security Alerts */}
+      {securityAlerts && securityAlerts.length > 0 && (
         <div className="security-alerts">
-          <div className="alerts-header">
-            <h2 className="alerts-title">Security Alerts</h2>
-            <span className="alert-count">{securityAlerts.length}</span>
-          </div>
-          <div className="alerts-list">
-            {securityAlerts.map(alert => (
-              <div key={alert.id} className={`alert-item ${getSeverityClass(alert.severity)}`}>
-                <div className="alert-indicator"></div>
-                <div className="alert-content">
-                  <p className="alert-message">{alert.message}</p>
-                  <div className="alert-meta">
-                    <span className="alert-time">🕒 {alert.timestamp}</span>
-                    <span className={`severity-badge ${alert.severity}`}>
-                      {alert.severity.toUpperCase()}
-                    </span>
-                  </div>
+          <h3>🚨 Security Alerts</h3>
+          <div className="alerts-grid">
+            {securityAlerts.map((alert) => (
+              <div key={alert.id} className={`alert-card ${getSeverityClass(alert.severity)}`}>
+                <div className="alert-header">
+                  <span className="alert-icon">{alert.icon}</span>
+                  <span className="alert-severity">{alert.severity}</span>
                 </div>
+                <p className="alert-message">{alert.message}</p>
+                <span className="alert-time">
+                  {new Date(alert.timestamp).toLocaleString()}
+                </span>
               </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Audit Log Table */}
-        <div className="audit-table-container">
-          <div className="table-header">
-            <h2 className="table-title">Audit Trail</h2>
-            <div className="table-controls">
-              <select 
-                className="filter-select"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-              >
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="all">All Time</option>
-              </select>
-              <select 
-                className="filter-select"
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
-              >
-                <option value="all">All Events</option>
-                <option value="success">Success Only</option>
-                <option value="failed">Failed Only</option>
-              </select>
+      {/* Statistics */}
+      {stats && (
+        <div className="audit-stats">
+          <div className="stat-card">
+            <span className="stat-icon">📊</span>
+            <div>
+              <p className="stat-label">Total Events</p>
+              <p className="stat-value">{stats.total_events || 0}</p>
             </div>
           </div>
-
-          <div className="table-scroll">
-            <table className="audit-table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>User</th>
-                  <th>Action</th>
-                  <th>Resource</th>
-                  <th>Status</th>
-                  <th>IP Address</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {auditLogs.map(log => (
-                  <tr key={log.id} className="audit-row">
-                    <td className="timestamp-cell">{log.timestamp}</td>
-                    <td className="user-cell">
-                      <div className="user-info-cell">
-                        <div className="user-avatar-small">👤</div>
-                        <span>{log.user}</span>
-                      </div>
-                    </td>
-                    <td className="action-cell">
-                      <div className="action-tag">
-                        <span className="action-icon-small">{getActionIcon(log.action)}</span>
-                        <span>{log.action}</span>
-                      </div>
-                    </td>
-                    <td className="resource-cell">{log.resource}</td>
-                    <td className="status-cell">
-                      <span className={`status-badge ${getStatusColor(log.status)}`}>
-                        {log.status}
-                      </span>
-                    </td>
-                    <td className="ip-cell">
-                      <code>{log.ip}</code>
-                    </td>
-                    <td className="details-cell">{log.details}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="stat-card">
+            <span className="stat-icon">❌</span>
+            <div>
+              <p className="stat-label">Failed Logins</p>
+              <p className="stat-value">{stats.failed_logins || 0}</p>
+            </div>
           </div>
-
-          <div className="table-footer">
-            <span className="results-count">Showing {auditLogs.length} of 1,847 events</span>
-            <div className="pagination">
-              <button className="page-btn">←</button>
-              <button className="page-btn active">1</button>
-              <button className="page-btn">2</button>
-              <button className="page-btn">3</button>
-              <button className="page-btn">→</button>
+          <div className="stat-card">
+            <span className="stat-icon">👥</span>
+            <div>
+              <p className="stat-label">Active Users</p>
+              <p className="stat-value">{stats.active_users || 0}</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <span className="stat-icon">🕐</span>
+            <div>
+              <p className="stat-label">Last 24h</p>
+              <p className="stat-value">{stats.events_24h || 0}</p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
+      )}
 
-export default AuditLog
+      {/* Filters */}
+      <div className="audit-filters">
+        <div className="search-box">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search logs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <select
+          className="filter-select"
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+        >
+          <option value="all">All Events</option>
+          <option value="LOGIN">Logins</option>
+          <option value="FAILED_LOGIN">Failed Logins</option>
+          <option value="INSERT">Inserts</option>
+          <option value="UPDATE">Updates</option>
+          <option value="DELETE">Deletes</option>
+          <option value="GRANT">Grants</option>
+          <option value="REVOKE">Revokes</option>
+        </select>
+        <button className="btn-export">📥 Export Logs</button>
+      </div>
+
+      {/* Audit Table */}
+      <div className="audit-table-container">
+        <table className="audit-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>User</th>
+              <th>Table</th>
+              <th>Action</th>
+              <th>Timestamp</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLogs.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="no-data">
+                  No audit logs found
+                </td>
+              </tr>
+            ) : (
+              filteredLogs.map((log) => (
+                <tr key={log.audit_id}>
+                  <td>
+                    <span className="event-badge">
+                      {getEventIcon(log.event_type)} {log.event_type}
+                    </span>
+                  </td>
+                  <td>{log.username || 'System'}</td>
+                  <td>{log.table_name || 'N/A'}</td>
+                  <td>{log.action || 'N/A'}</td>
+                  <td className="timestamp">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </td>
+                  <td>
+                    <button className="btn-details" title="View details">
+                      👁️
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            ← Previous
+          </button>
+          <span className="page-info">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AuditLog;

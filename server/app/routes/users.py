@@ -12,47 +12,40 @@ def get_all_users():
     
     query = """
         SELECT 
-            u.user_id as id,
+            u.user_id,
             u.username,
-            u.email,
-            u.full_name as name,
-            CASE WHEN u.is_active THEN 'Active' ELSE 'Inactive' END as status,
-            STRING_AGG(r.role_name, ', ') as role,
-            u.created_at
+            u.password_hash,
+            u.role_id,
+            r.role_name as roles,
+            u.created_at,
+            u.updated_at
         FROM users u
-        LEFT JOIN user_roles ur ON u.user_id = ur.user_id
-        LEFT JOIN roles r ON ur.role_id = r.role_id
+        LEFT JOIN roles r ON u.role_id = r.role_id
     """
     
     params = []
     if search:
-        query += " WHERE u.username ILIKE %s OR u.email ILIKE %s OR u.full_name ILIKE %s"
-        search_param = f"%{search}%"
-        params = [search_param, search_param, search_param]
+        query += " WHERE u.username ILIKE %s"
+        params = [f"%{search}%"]
     
-    query += """
-        GROUP BY u.user_id, u.username, u.email, u.full_name, u.is_active, u.created_at
-        ORDER BY u.created_at DESC
-    """
+    query += " ORDER BY u.created_at DESC"
     
     users = execute_query(query, tuple(params) if params else None)
     
-    # Add avatar emoji based on role
+    # Add avatar emoji based on roles
     for user in users:
-        if user['role'] and 'Doctor' in user['role']:
+        if user['roles'] and 'Doctor' in user['roles']:
             user['avatar'] = '👨‍⚕️'
-        elif user['role'] and 'Nurse' in user['role']:
+        elif user['roles'] and 'Nurse' in user['roles']:
             user['avatar'] = '👩‍⚕️'
-        elif user['role'] and 'Admin' in user['role']:
+        elif user['roles'] and 'Admin' in user['roles']:
             user['avatar'] = '⚙️'
         else:
             user['avatar'] = '👤'
     
     return jsonify({
         'success': True,
-        'data': {
-            'users': users
-        }
+        'data': users
     })
 
 @bp.route('/<int:user_id>', methods=['GET'])
@@ -62,13 +55,10 @@ def get_user(user_id):
     query = """
         SELECT 
             u.*,
-            ARRAY_AGG(r.role_name) as roles,
-            ARRAY_AGG(r.role_id) as role_ids
+            r.role_name as roles
         FROM users u
-        LEFT JOIN user_roles ur ON u.user_id = ur.user_id
-        LEFT JOIN roles r ON ur.role_id = r.role_id
+        LEFT JOIN roles r ON u.role_id = r.role_id
         WHERE u.user_id = %s
-        GROUP BY u.user_id
     """
     
     user = execute_query(query, (user_id,), fetch_one=True)
@@ -91,29 +81,17 @@ def create_user():
     data = request.get_json()
     
     username = data.get('username')
-    email = data.get('email')
     password = data.get('password')  # In production, hash this!
-    full_name = data.get('full_name')
-    role_ids = data.get('role_ids', [])
+    role_id = data.get('role_id')  # Single role only
     
-    # Insert user
+    # Insert user with role
     insert_user_query = """
-        INSERT INTO users (username, email, password_hash, full_name, is_active)
-        VALUES (%s, %s, %s, %s, TRUE)
-        RETURNING user_id, username, email, full_name
+        INSERT INTO users (username, password_hash, role_id)
+        VALUES (%s, %s, %s)
+        RETURNING user_id, username, role_id
     """
     
-    user = execute_query(insert_user_query, (username, email, password, full_name), fetch_one=True)
-    
-    # Assign roles
-    if role_ids:
-        role_queries = []
-        for role_id in role_ids:
-            role_queries.append((
-                "INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)",
-                (user['user_id'], role_id)
-            ))
-        execute_transaction(role_queries)
+    user = execute_query(insert_user_query, (username, password, role_id), fetch_one=True)
     
     return jsonify({
         'success': True,
@@ -127,18 +105,17 @@ def update_user(user_id):
     """Update user"""
     data = request.get_json()
     
-    full_name = data.get('full_name')
-    email = data.get('email')
-    is_active = data.get('is_active', True)
+    username = data.get('username')
+    role_id = data.get('role_id')
     
     query = """
         UPDATE users 
-        SET full_name = %s, email = %s, is_active = %s
+        SET username = %s, role_id = %s, updated_at = CURRENT_TIMESTAMP
         WHERE user_id = %s
-        RETURNING user_id, username, email, full_name, is_active
+        RETURNING user_id, username, role_id
     """
     
-    user = execute_query(query, (full_name, email, is_active, user_id), fetch_one=True)
+    user = execute_query(query, (username, role_id, user_id), fetch_one=True)
     
     if not user:
         return jsonify({
@@ -155,10 +132,9 @@ def update_user(user_id):
 @bp.route('/<int:user_id>', methods=['DELETE'])
 @handle_errors
 def delete_user(user_id):
-    """Delete user (soft delete)"""
+    """Delete user (hard delete since no is_active column)"""
     query = """
-        UPDATE users 
-        SET is_active = FALSE
+        DELETE FROM users 
         WHERE user_id = %s
         RETURNING user_id
     """
@@ -179,18 +155,24 @@ def delete_user(user_id):
 @bp.route('/<int:user_id>/roles', methods=['POST'])
 @handle_errors
 def assign_role(user_id):
-    """Assign role to user"""
+    """Assign role to user (updates role_id in users table)"""
     data = request.get_json()
     role_id = data.get('roleId')
     
     query = """
-        INSERT INTO user_roles (user_id, role_id)
-        VALUES (%s, %s)
-        ON CONFLICT DO NOTHING
+        UPDATE users
+        SET role_id = %s
+        WHERE user_id = %s
         RETURNING user_id, role_id
     """
     
-    result = execute_query(query, (user_id, role_id), fetch_one=True)
+    result = execute_query(query, (role_id, user_id), fetch_one=True)
+    
+    if not result:
+        return jsonify({
+            'success': False,
+            'message': 'User not found'
+        }), 404
     
     return jsonify({
         'success': True,

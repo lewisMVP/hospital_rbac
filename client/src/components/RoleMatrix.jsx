@@ -1,209 +1,125 @@
-import React, { useState } from 'react'
-import './RoleMatrix.css'
+import React from 'react';
+import { useAPI } from '../hooks/useAPI';
+import { roleAPI } from '../services/api';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorMessage from './ErrorMessage';
+import './RoleMatrix.css';
 
 const RoleMatrix = () => {
-  const roles = ['Doctor', 'Nurse', 'Receptionist', 'Admin', 'Billing']
-  const resources = [
-    { name: 'Patients', actions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
-    { name: 'Medical Records', actions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
-    { name: 'Appointments', actions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
-    { name: 'Doctors', actions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
-    { name: 'Invoices', actions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
-  ]
+  // Fetch roles from API
+  const { data: roles, loading, error, refetch } = useAPI(roleAPI.getAll);
 
-  // Mock permission data
-  const permissions = {
-    'Doctor': {
-      'Patients': ['SELECT', 'INSERT', 'UPDATE'],
-      'Medical Records': ['SELECT', 'INSERT', 'UPDATE'],
-      'Appointments': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-      'Doctors': ['SELECT'],
-      'Invoices': ['SELECT'],
-    },
-    'Nurse': {
-      'Patients': ['SELECT', 'UPDATE'],
-      'Medical Records': ['SELECT', 'INSERT'],
-      'Appointments': ['SELECT', 'UPDATE'],
-      'Doctors': ['SELECT'],
-      'Invoices': [],
-    },
-    'Receptionist': {
-      'Patients': ['SELECT', 'INSERT'],
-      'Medical Records': [],
-      'Appointments': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-      'Doctors': ['SELECT'],
-      'Invoices': ['SELECT'],
-    },
-    'Admin': {
-      'Patients': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-      'Medical Records': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-      'Appointments': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-      'Doctors': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-      'Invoices': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-    },
-    'Billing': {
-      'Patients': ['SELECT'],
-      'Medical Records': ['SELECT'],
-      'Appointments': ['SELECT'],
-      'Doctors': ['SELECT'],
-      'Invoices': ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
-    },
-  }
+  // Debug log
+  console.log('RoleMatrix - roles:', roles);
+  console.log('RoleMatrix - loading:', loading);
+  console.log('RoleMatrix - error:', error);
 
-  const [selectedRole, setSelectedRole] = useState('Doctor')
-  const [viewMode, setViewMode] = useState('matrix') // 'matrix' or 'detailed'
+  // Static permissions for each role (based on your role_permission.sql)
+  const rolePermissions = {
+    'Admin': [
+      { table: 'Patients', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
+      { table: 'MedicalRecords', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
+      { table: 'Appointments', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
+      { table: 'Users', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
+      { table: 'Roles', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] }
+    ],
+    'Doctor': [
+      { table: 'Patients', permissions: ['SELECT'] },
+      { table: 'MedicalRecords', permissions: ['SELECT', 'INSERT', 'UPDATE'] },
+      { table: 'Appointments', permissions: ['SELECT'] }
+    ],
+    'Nurse': [
+      { table: 'Patients', permissions: ['SELECT'] },
+      { table: 'MedicalRecords', permissions: ['SELECT'] },
+      { table: 'Appointments', permissions: ['SELECT'] }
+    ],
+    'Receptionist': [
+      { table: 'Patients', permissions: ['SELECT', 'INSERT'] },
+      { table: 'Appointments', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] }
+    ],
+    'Billing': [
+      { table: 'Patients', permissions: ['SELECT'] }
+    ]
+  };
 
-  const hasPermission = (role, resource, action) => {
-    return permissions[role]?.[resource]?.includes(action) || false
-  }
+  const getPermissionIcon = (permission) => {
+    const icons = {
+      'SELECT': '👁️',
+      'INSERT': '➕',
+      'UPDATE': '✏️',
+      'DELETE': '🗑️'
+    };
+    return icons[permission] || '🔧';
+  };
 
-  const getPermissionCount = (role) => {
-    let count = 0
-    Object.values(permissions[role] || {}).forEach(actions => {
-      count += actions.length
-    })
-    return count
-  }
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage error={error} onRetry={refetch} fullScreen />;
 
   return (
     <div className="role-matrix">
-      {/* View Mode Toggle */}
-      <div className="view-controls">
-        <div className="view-toggle">
-          <button 
-            className={`toggle-btn ${viewMode === 'matrix' ? 'active' : ''}`}
-            onClick={() => setViewMode('matrix')}
-          >
-            <span>📊</span>
-            <span>Matrix View</span>
-          </button>
-          <button 
-            className={`toggle-btn ${viewMode === 'detailed' ? 'active' : ''}`}
-            onClick={() => setViewMode('detailed')}
-          >
-            <span>📋</span>
-            <span>Detailed View</span>
-          </button>
-        </div>
-        <button className="export-btn">
-          <span>📥</span>
-          <span>Export Matrix</span>
-        </button>
+      {/* Header */}
+      <div className="matrix-header">
+        <h2>Roles & Permissions Matrix</h2>
+        <p className="matrix-subtitle">Access control overview for all roles</p>
       </div>
 
-      {viewMode === 'matrix' ? (
-        <div className="matrix-container">
-          <div className="matrix-scroll">
-            <table className="permission-matrix">
-              <thead>
-                <tr>
-                  <th className="resource-header">Resource / Role</th>
-                  {roles.map(role => (
-                    <th key={role} className="role-header">
-                      <div className="role-header-content">
-                        <span className="role-header-name">{role}</span>
-                        <span className="permission-count">{getPermissionCount(role)}</span>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {resources.map(resource => (
-                  <React.Fragment key={resource.name}>
-                    <tr className="resource-row">
-                      <td className="resource-name" colSpan={roles.length + 1}>
-                        <div className="resource-name-content">
-                          <span className="resource-icon">📁</span>
-                          <span>{resource.name}</span>
-                        </div>
-                      </td>
-                    </tr>
-                    {resource.actions.map(action => (
-                      <tr key={`${resource.name}-${action}`} className="action-row">
-                        <td className="action-name">
-                          <span className="action-badge">{action}</span>
-                        </td>
-                        {roles.map(role => (
-                          <td key={`${role}-${resource.name}-${action}`} className="permission-cell">
-                            <button 
-                              className={`permission-toggle ${hasPermission(role, resource.name, action) ? 'granted' : 'denied'}`}
-                            >
-                              <span className="toggle-icon">
-                                {hasPermission(role, resource.name, action) ? '✓' : '✕'}
-                              </span>
-                            </button>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="detailed-view">
-          {/* Role Selector */}
-          <div className="role-selector">
-            {roles.map(role => (
-              <button
-                key={role}
-                className={`role-select-btn ${selectedRole === role ? 'active' : ''}`}
-                onClick={() => setSelectedRole(role)}
-              >
-                <div className="role-select-content">
-                  <span className="role-select-name">{role}</span>
-                  <span className="role-select-count">{getPermissionCount(role)} permissions</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Detailed Permissions */}
-          <div className="detailed-permissions">
-            <div className="detailed-header">
-              <h2 className="detailed-title">{selectedRole} Permissions</h2>
-              <span className="total-permissions">{getPermissionCount(selectedRole)} Total</span>
-            </div>
-            
-            <div className="resource-cards">
-              {resources.map(resource => {
-                const rolePermissions = permissions[selectedRole]?.[resource.name] || []
-                const hasAny = rolePermissions.length > 0
-                
-                return (
-                  <div key={resource.name} className={`resource-card ${hasAny ? 'has-permissions' : 'no-permissions'}`}>
-                    <div className="resource-card-header">
-                      <div className="resource-title">
-                        <span className="resource-icon-large">📁</span>
-                        <h3>{resource.name}</h3>
-                      </div>
-                      <span className="permission-badge-count">
-                        {rolePermissions.length}/{resource.actions.length}
-                      </span>
-                    </div>
-                    <div className="permissions-grid">
-                      {resource.actions.map(action => {
-                        const granted = rolePermissions.includes(action)
-                        return (
-                          <div key={action} className={`permission-item ${granted ? 'granted' : 'denied'}`}>
-                            <span className="permission-icon">{granted ? '✓' : '✕'}</span>
-                            <span className="permission-label">{action}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
+      {/* Roles Grid */}
+      <div className="roles-permission-grid">
+        {roles && roles.length > 0 ? (
+          roles.map((role) => {
+            const permissions = rolePermissions[role.role_name] || [];
+            return (
+              <div key={role.role_id} className="role-permission-card">
+                <div className="role-card-header">
+                  <div className="role-icon">{role.icon || '🔑'}</div>
+                  <div>
+                    <h3 className="role-title">{role.role_name}</h3>
+                    <p className="role-user-count">{role.user_count || 0} users</p>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+                </div>
 
-export default RoleMatrix
+                <div className="permissions-list">
+                  {permissions.length > 0 ? (
+                    permissions.map((perm, index) => (
+                      <div key={index} className="permission-group">
+                        <div className="permission-table-name">
+                          📁 {perm.table}
+                        </div>
+                        <div className="permission-actions">
+                          {perm.permissions.map((action, i) => (
+                            <span key={i} className="permission-badge granted">
+                              {getPermissionIcon(action)} {action}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-permissions">
+                      <span>No permissions assigned</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="no-roles">
+            <p>No roles found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Info Banner */}
+      <div className="info-banner">
+        <div className="info-icon">ℹ️</div>
+        <div className="info-content">
+          <strong>Note:</strong> Permissions are managed at the PostgreSQL database level using GRANT statements.
+          To modify permissions, please update the database roles directly.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RoleMatrix;

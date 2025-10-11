@@ -10,17 +10,14 @@ def get_all_roles():
     """Get all roles with user count and permission count"""
     query = """
         SELECT 
-            r.role_id as id,
-            r.role_name as name,
-            r.description,
-            COUNT(DISTINCT ur.user_id) as users,
-            COUNT(DISTINCT rp.permission_id) as permissions,
-            r.created_at
+            r.role_id,
+            r.role_name,
+            COUNT(u.user_id) as user_count,
+            0 as permission_count
         FROM roles r
-        LEFT JOIN user_roles ur ON r.role_id = ur.role_id
-        LEFT JOIN role_permissions rp ON r.role_id = rp.role_id
-        GROUP BY r.role_id, r.role_name, r.description, r.created_at
-        ORDER BY r.created_at
+        LEFT JOIN users u ON r.role_id = u.role_id
+        GROUP BY r.role_id, r.role_name
+        ORDER BY r.role_id
     """
     
     roles = execute_query(query)
@@ -35,9 +32,7 @@ def get_all_roles():
     
     return jsonify({
         'success': True,
-        'data': {
-            'roles': roles
-        }
+        'data': roles
     })
 
 @bp.route('/<int:role_id>', methods=['GET'])
@@ -46,11 +41,10 @@ def get_role(role_id):
     """Get role by ID"""
     query = """
         SELECT r.*, 
-               COUNT(DISTINCT ur.user_id) as user_count,
-               COUNT(DISTINCT rp.permission_id) as permission_count
+               COUNT(DISTINCT u.user_id) as user_count,
+               0 as permission_count
         FROM roles r
-        LEFT JOIN user_roles ur ON r.role_id = ur.user_id
-        LEFT JOIN role_permissions rp ON r.role_id = rp.role_id
+        LEFT JOIN users u ON r.role_id = u.role_id
         WHERE r.role_id = %s
         GROUP BY r.role_id
     """
