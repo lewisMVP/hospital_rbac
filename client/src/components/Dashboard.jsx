@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import './Dashboard.css'
 import { dashboardAPI } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 import ErrorMessage from './ErrorMessage'
 
-const Dashboard = () => {
+const Dashboard = ({ setActiveView }) => {
+  const { user } = useAuth()
   const [stats, setStats] = useState([])
   const [recentActivities, setRecentActivities] = useState([])
   const [roleDistribution, setRoleDistribution] = useState([])
@@ -91,6 +93,31 @@ const Dashboard = () => {
     if (actionLower.includes('create') || actionLower.includes('add')) return 'create'
     if (actionLower.includes('delete') || actionLower.includes('remove')) return 'delete'
     return 'view'
+  }
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'addUser':
+        setActiveView('users')
+        // Scroll to top when switching views
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        break
+      case 'createRole':
+        setActiveView('roles')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        break
+      case 'generateReport':
+        // For now, go to audit log where admin can see all activities
+        setActiveView('audit')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        break
+      case 'auditSearch':
+        setActiveView('audit')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        break
+      default:
+        break
+    }
   }
 
   if (loading) {
@@ -180,28 +207,30 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <h2 className="section-title">Quick Actions</h2>
-        <div className="actions-grid">
-          <button className="action-card">
-            <span className="action-icon">👤</span>
-            <span className="action-label">Add User</span>
-          </button>
-          <button className="action-card">
-            <span className="action-icon">🔑</span>
-            <span className="action-label">Create Role</span>
-          </button>
-          <button className="action-card">
-            <span className="action-icon">📊</span>
-            <span className="action-label">Generate Report</span>
-          </button>
-          <button className="action-card">
-            <span className="action-icon">🔍</span>
-            <span className="action-label">Audit Search</span>
-          </button>
+      {/* Quick Actions - Only for Admin */}
+      {user?.role_name === 'Admin' && (
+        <div className="quick-actions">
+          <h2 className="section-title">Quick Actions</h2>
+          <div className="actions-grid">
+            <button className="action-card" onClick={() => handleQuickAction('addUser')}>
+              <span className="action-icon">👤</span>
+              <span className="action-label">Add User</span>
+            </button>
+            <button className="action-card" onClick={() => handleQuickAction('createRole')}>
+              <span className="action-icon">🔑</span>
+              <span className="action-label">Create Role</span>
+            </button>
+            <button className="action-card" onClick={() => handleQuickAction('generateReport')}>
+              <span className="action-icon">📊</span>
+              <span className="action-label">Generate Report</span>
+            </button>
+            <button className="action-card" onClick={() => handleQuickAction('auditSearch')}>
+              <span className="action-icon">🔍</span>
+              <span className="action-label">Audit Search</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

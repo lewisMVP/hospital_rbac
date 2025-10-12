@@ -24,13 +24,27 @@ const AuditLog = () => {
   const { data: stats } = useAPI(auditAPI.getStats);
   const { data: securityAlerts } = useAPI(auditAPI.getSecurityAlerts);
 
+  // Debug logging
+  console.log('🔍 Audit Log Debug:', {
+    auditLogs,
+    loading,
+    error,
+    stats,
+    securityAlerts
+  });
+
   // Filter logs - auditLogs is already the data array from useAPI
   const filteredLogs = auditLogs?.filter(log => {
-    const matchesType = filterType === 'all' || log.event_type === filterType;
+    // Handle FAILED_LOGIN filter: match LOGIN events with failed status
+    const matchesType = filterType === 'all' || 
+      log.event_type === filterType ||
+      (filterType === 'FAILED_LOGIN' && log.event_type === 'LOGIN' && log.status === 'failed');
+    
     const matchesSearch = !searchTerm || 
       log.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.event_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.table_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      log.table_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.status?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesType && matchesSearch;
   }) || [];
 
@@ -46,7 +60,12 @@ const AuditLog = () => {
     return severityMap[severity?.toLowerCase()] || 'severity-low';
   };
 
-  const getEventIcon = (eventType) => {
+  const getEventIcon = (eventType, status) => {
+    // Show failed login icon if it's a LOGIN with failed status
+    if (eventType === 'LOGIN' && status === 'failed') {
+      return '❌';
+    }
+    
     const iconMap = {
       'LOGIN': '🔐',
       'LOGOUT': '🚪',
@@ -173,17 +192,22 @@ const AuditLog = () => {
                 <tr key={log.audit_id}>
                   <td>
                     <span className="event-badge">
-                      {getEventIcon(log.event_type)} {log.event_type}
+                      {getEventIcon(log.event_type, log.status)} {log.event_type}
+                      {log.status === 'failed' && ' (Failed)'}
                     </span>
                   </td>
                   <td>{log.username || 'System'}</td>
                   <td>{log.table_name || 'N/A'}</td>
-                  <td>{log.action || 'N/A'}</td>
+                  <td>
+                    <span className={log.status === 'failed' ? 'status-failed' : 'status-success'}>
+                      {log.status || 'success'}
+                    </span>
+                  </td>
                   <td className="timestamp">
-                    {new Date(log.timestamp).toLocaleString()}
+                    {new Date(log.event_time).toLocaleString()}
                   </td>
                   <td>
-                    <button className="btn-details" title="View details">
+                    <button className="btn-details" title={log.details || 'View details'}>
                       👁️
                     </button>
                   </td>

@@ -1,0 +1,120 @@
+/* Appointments Styles */
+.appointments-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.appointments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.appointments-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 0.5rem 0;
+}
+
+.appointments-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.appointments-table thead {
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+}
+
+.appointments-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.appointments-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  color: #1d1d1f;
+  font-size: 0.95rem;
+}
+
+.appointments-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.appointments-table tbody tr:hover {
+  background: rgba(0, 122, 255, 0.04);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-scheduled {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
+}
+
+.status-completed {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: #2e7d32;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+}
+
+.status-noshow {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  color: #e65100;
+}
+
+.appointment-info {
+  background: rgba(0, 122, 255, 0.08);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem !important;
+  line-height: 1.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .appointments-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .appointments-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .appointments-table {
+    min-width: 900px;
+  }
+}

@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import execute_query
+from app.utils.auth import token_required
 
 bp = Blueprint('dashboard', __name__, url_prefix='/api/dashboard')
 
 @bp.route('/stats', methods=['GET'])
-def get_stats():
+@token_required  # All authenticated users can view dashboard
+def get_stats(current_user):
     """Get dashboard statistics"""
     try:
         # Get user count
@@ -74,7 +76,8 @@ def get_stats():
         }), 500
 
 @bp.route('/activities', methods=['GET'])
-def get_recent_activities():
+@token_required
+def get_recent_activities(current_user):
     """Get recent activities"""
     try:
         limit = int(request.args.get('limit', 5))
@@ -105,7 +108,8 @@ def get_recent_activities():
         }), 500
 
 @bp.route('/role-distribution', methods=['GET'])
-def get_role_distribution():
+@token_required
+def get_role_distribution(current_user):
     """Get role distribution"""
     try:
         query = """

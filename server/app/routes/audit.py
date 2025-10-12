@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.utils.database import execute_query
+from app.utils.auth import role_required
 
 bp = Blueprint('audit', __name__, url_prefix='/api/audit')
 
 @bp.route('/', methods=['GET'])
+@role_required(['Admin'])  # Only Admin can view audit logs
 def get_audit_logs():
     """Get audit logs with pagination and filters"""
     try:
@@ -13,6 +15,9 @@ def get_audit_logs():
         search = request.args.get('search')
         
         offset = (page - 1) * limit
+        
+        # Debug log
+        print(f"🔍 Audit Log Query - page: {page}, limit: {limit}, event_type: {event_type}, search: {search}")
         
         # Base query - SỬA TÊN BẢNG
         query = """
@@ -37,7 +42,12 @@ def get_audit_logs():
         query += " ORDER BY a.event_time DESC LIMIT %s OFFSET %s"
         params.extend([limit, offset])
         
+        print(f"📊 Query: {query}")
+        print(f"📊 Params: {params}")
+        
         logs = execute_query(query, tuple(params))
+        
+        print(f"✅ Found {len(logs)} logs")
         
         # Get total count
         count_query = "SELECT COUNT(*) as total FROM auditlog WHERE 1=1"

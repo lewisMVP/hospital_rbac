@@ -1,13 +1,53 @@
 // API Service Layer for Hospital RBAC
+import axios from 'axios'
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
+// Create axios instance for backward compatibility
+const axiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Add token to requests
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Handle responses
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
 
 // Generic fetch wrapper with error handling
 async function fetchAPI(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`
   
+  // Get token from localStorage
+  const token = localStorage.getItem('token')
+  
   const config = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     },
     ...options,
@@ -137,23 +177,120 @@ export const permissionAPI = {
   }),
 }
 
+// ==================== PATIENTS APIs ====================
+export const patientAPI = {
+  // Lấy danh sách patients
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return fetchAPI(`/patients${queryString ? `?${queryString}` : ''}`)
+  },
+  
+  // Lấy patient theo ID
+  getById: (id) => fetchAPI(`/patients/${id}`),
+  
+  // Tạo patient mới
+  create: (patientData) => fetchAPI('/patients', {
+    method: 'POST',
+    body: JSON.stringify(patientData),
+  }),
+  
+  // Cập nhật patient
+  update: (id, patientData) => fetchAPI(`/patients/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(patientData),
+  }),
+  
+  // Xóa patient
+  delete: (id) => fetchAPI(`/patients/${id}`, {
+    method: 'DELETE',
+  }),
+}
+
+// ==================== APPOINTMENTS APIs ====================
+export const appointmentAPI = {
+  // Lấy danh sách appointments
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return fetchAPI(`/appointments${queryString ? `?${queryString}` : ''}`)
+  },
+  
+  // Lấy appointment theo ID
+  getById: (id) => fetchAPI(`/appointments/${id}`),
+  
+  // Tạo appointment mới
+  create: (appointmentData) => fetchAPI('/appointments', {
+    method: 'POST',
+    body: JSON.stringify(appointmentData),
+  }),
+  
+  // Cập nhật appointment
+  update: (id, appointmentData) => fetchAPI(`/appointments/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(appointmentData),
+  }),
+  
+  // Xóa appointment
+  delete: (id) => fetchAPI(`/appointments/${id}`, {
+    method: 'DELETE',
+  }),
+}
+
+// ==================== MEDICAL RECORDS APIs ====================
+export const medicalRecordAPI = {
+  // Lấy danh sách medical records
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return fetchAPI(`/medical-records${queryString ? `?${queryString}` : ''}`)
+  },
+  
+  // Lấy medical record theo ID
+  getById: (id) => fetchAPI(`/medical-records/${id}`),
+  
+  // Tạo medical record mới
+  create: (recordData) => fetchAPI('/medical-records', {
+    method: 'POST',
+    body: JSON.stringify(recordData),
+  }),
+  
+  // Cập nhật medical record
+  update: (id, recordData) => fetchAPI(`/medical-records/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(recordData),
+  }),
+  
+  // Xóa medical record
+  delete: (id) => fetchAPI(`/medical-records/${id}`, {
+    method: 'DELETE',
+  }),
+}
+
 // ==================== AUDIT APIs ====================
 export const auditAPI = {
   // Lấy audit logs (alias cho compatibility)
   getAll: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString()
+    // Filter out undefined/null values
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v != null && v !== undefined)
+    )
+    const queryString = new URLSearchParams(cleanParams).toString()
     return fetchAPI(`/audit/${queryString ? `?${queryString}` : ''}`)
   },
   
   // Lấy audit logs
   getLogs: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString()
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v != null && v !== undefined)
+    )
+    const queryString = new URLSearchParams(cleanParams).toString()
     return fetchAPI(`/audit/${queryString ? `?${queryString}` : ''}`)
   },
   
   // Lấy failed login attempts  
   getFailedLogins: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString()
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v != null && v !== undefined)
+    )
+    const queryString = new URLSearchParams(cleanParams).toString()
     return fetchAPI(`/audit/failed-logins${queryString ? `?${queryString}` : ''}`)
   },
   
@@ -165,7 +302,10 @@ export const auditAPI = {
   
   // Export audit logs
   export: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString()
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v != null && v !== undefined)
+    )
+    const queryString = new URLSearchParams(cleanParams).toString()
     return fetchAPI(`/audit/export${queryString ? `?${queryString}` : ''}`)
   },
 }
@@ -193,12 +333,6 @@ export const authAPI = {
   }),
 }
 
-// Export tất cả APIs
-export default {
-  dashboard: dashboardAPI,
-  users: userAPI,
-  roles: roleAPI,
-  permissions: permissionAPI,
-  audit: auditAPI,
-  auth: authAPI,
-}
+// Export axios instance as default for backward compatibility with existing components
+// that use api.get(), api.post(), etc.
+export default axiosInstance

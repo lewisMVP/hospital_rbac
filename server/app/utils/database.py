@@ -1,6 +1,24 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from app.config import Config
+from datetime import date, time, datetime
+from decimal import Decimal
+
+def serialize_value(value):
+    """Convert non-JSON-serializable types to strings"""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    elif isinstance(value, time):
+        return value.strftime('%H:%M:%S')
+    elif isinstance(value, Decimal):
+        return float(value)
+    return value
+
+def serialize_row(row):
+    """Convert a database row to JSON-serializable dict"""
+    if row is None:
+        return None
+    return {key: serialize_value(value) for key, value in row.items()}
 
 def get_db_connection():
     """
@@ -43,8 +61,12 @@ def execute_query(query, params=None, fetch=True, fetch_one=False):
         if fetch:
             if fetch_one:
                 result = cursor.fetchone()
+                result = serialize_row(result) if result else None
             else:
                 result = cursor.fetchall()
+                result = [serialize_row(row) for row in result] if result else []
+            # Commit even for SELECT with RETURNING clause
+            conn.commit()
             conn.close()
             return result
         else:

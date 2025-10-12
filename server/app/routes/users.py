@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import execute_query, execute_transaction
 from app.utils.decorators import handle_errors
+from app.utils.auth import token_required, role_required, hash_password
 
 bp = Blueprint('users', __name__, url_prefix='/api/users')
 
 @bp.route('/', methods=['GET'])
+@role_required(['Admin'])  # Only Admin can view users
 @handle_errors
 def get_all_users():
     """Get all users with their roles"""
@@ -49,6 +51,7 @@ def get_all_users():
     })
 
 @bp.route('/<int:user_id>', methods=['GET'])
+@role_required(['Admin'])
 @handle_errors
 def get_user(user_id):
     """Get user by ID"""
@@ -75,14 +78,18 @@ def get_user(user_id):
     })
 
 @bp.route('/', methods=['POST'])
+@role_required(['Admin'])
 @handle_errors
 def create_user():
     """Create new user"""
     data = request.get_json()
     
     username = data.get('username')
-    password = data.get('password')  # In production, hash this!
+    password = data.get('password')
     role_id = data.get('role_id')  # Single role only
+    
+    # Hash password before storing
+    password_hash = hash_password(password)
     
     # Insert user with role
     insert_user_query = """
@@ -91,7 +98,7 @@ def create_user():
         RETURNING user_id, username, role_id
     """
     
-    user = execute_query(insert_user_query, (username, password, role_id), fetch_one=True)
+    user = execute_query(insert_user_query, (username, password_hash, role_id), fetch_one=True)
     
     return jsonify({
         'success': True,
@@ -100,6 +107,7 @@ def create_user():
     }), 201
 
 @bp.route('/<int:user_id>', methods=['PUT'])
+@role_required(['Admin'])
 @handle_errors
 def update_user(user_id):
     """Update user"""
@@ -107,15 +115,27 @@ def update_user(user_id):
     
     username = data.get('username')
     role_id = data.get('role_id')
+    password = data.get('password')  # Optional password update
     
-    query = """
-        UPDATE users 
-        SET username = %s, role_id = %s, updated_at = CURRENT_TIMESTAMP
-        WHERE user_id = %s
-        RETURNING user_id, username, role_id
-    """
-    
-    user = execute_query(query, (username, role_id, user_id), fetch_one=True)
+    # If password is provided, hash it and update
+    if password:
+        password_hash = hash_password(password)
+        query = """
+            UPDATE users 
+            SET username = %s, role_id = %s, password_hash = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = %s
+            RETURNING user_id, username, role_id
+        """
+        user = execute_query(query, (username, role_id, password_hash, user_id), fetch_one=True)
+    else:
+        # Update without changing password
+        query = """
+            UPDATE users 
+            SET username = %s, role_id = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = %s
+            RETURNING user_id, username, role_id
+        """
+        user = execute_query(query, (username, role_id, user_id), fetch_one=True)
     
     if not user:
         return jsonify({
@@ -130,6 +150,7 @@ def update_user(user_id):
     })
 
 @bp.route('/<int:user_id>', methods=['DELETE'])
+@role_required(['Admin'])
 @handle_errors
 def delete_user(user_id):
     """Delete user (hard delete since no is_active column)"""
@@ -153,6 +174,7 @@ def delete_user(user_id):
     })
 
 @bp.route('/<int:user_id>/roles', methods=['POST'])
+@role_required(['Admin'])
 @handle_errors
 def assign_role(user_id):
     """Assign role to user (updates role_id in users table)"""

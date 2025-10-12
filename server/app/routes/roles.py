@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, request
 from app.utils.database import execute_query, execute_transaction
 from app.utils.decorators import handle_errors
+from app.utils.auth import role_required
 
 bp = Blueprint('roles', __name__, url_prefix='/api/roles')
 
 @bp.route('/', methods=['GET'])
+@role_required(['Admin'])  # Only Admin can view roles
 @handle_errors
 def get_all_roles():
     """Get all roles with user count and permission count"""

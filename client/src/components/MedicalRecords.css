@@ -1,0 +1,70 @@
+/* Medical Records Styles - Reusing Patients.css structure */
+.medical-records-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.medical-records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.medical-records-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 0.5rem 0;
+}
+
+.medical-records-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.medical-records-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.medical-records-table thead {
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+}
+
+.medical-records-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.medical-records-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  color: #1d1d1f;
+  font-size: 0.95rem;
+}
+
+.medical-records-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.medical-records-table tbody tr:hover {
+  background: rgba(0, 122, 255, 0.04);
+}
+
+.record-info {
+  background: rgba(0, 122, 255, 0.08);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem !important;
+  line-height: 1.6;
+}

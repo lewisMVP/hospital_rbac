@@ -31,13 +31,17 @@ def create_app():
         print("⚠️  Make sure PostgreSQL is running and credentials are correct in .env")
     
     # Register blueprints
-    from app.routes import dashboard, users, roles, permissions, audit
+    from app.routes import dashboard, users, roles, permissions, audit, auth, patients, medicalrecords, appointments
     
+    app.register_blueprint(auth.bp)  # Authentication routes
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(users.bp)
     app.register_blueprint(roles.bp)
     app.register_blueprint(permissions.bp)
     app.register_blueprint(audit.bp)
+    app.register_blueprint(patients.patients_bp, url_prefix='/api/patients')
+    app.register_blueprint(medicalrecords.medicalrecords_bp, url_prefix='/api/medical-records')
+    app.register_blueprint(appointments.appointments_bp, url_prefix='/api/appointments')
     
     # Health check route
     @app.route('/api/health')
@@ -56,11 +60,15 @@ def create_app():
             'version': '1.0.0',
             'endpoints': {
                 'health': '/api/health',
+                'auth': '/api/auth/*',
                 'dashboard': '/api/dashboard/*',
                 'users': '/api/users/*',
                 'roles': '/api/roles/*',
                 'permissions': '/api/permissions/*',
-                'audit': '/api/audit/*'
+                'audit': '/api/audit/*',
+                'patients': '/api/patients/*',
+                'medical-records': '/api/medical-records/*',
+                'appointments': '/api/appointments/*'
             }
         })
     

@@ -1,52 +1,120 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import './Sidebar.css'
 
 const Sidebar = ({ activeView, setActiveView }) => {
-  const menuItems = [
-    { id: 'dashboard', icon: '📊', label: 'Dashboard', description: 'Overview' },
-    { id: 'users', icon: '👥', label: 'Users', description: 'User Management' },
-    { id: 'roles', icon: '🔐', label: 'Roles & Permissions', description: 'Access Matrix' },
-    { id: 'audit', icon: '📋', label: 'Audit Logs', description: 'Security Trail' },
+  const { user, logout } = useAuth()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  const allMenuItems = [
+    { id: 'dashboard', icon: '📊', label: 'Dashboard', description: 'Overview', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Billing'] },
+    { id: 'patients', icon: '🏥', label: 'Patients', description: 'Patient Records', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist'] },
+    { id: 'medical-records', icon: '📋', label: 'Medical Records', description: 'Medical History', roles: ['Admin', 'Doctor', 'Nurse'] },
+    { id: 'appointments', icon: '📅', label: 'Appointments', description: 'Scheduling', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist'] },
+    { id: 'users', icon: '👥', label: 'Users', description: 'User Management', roles: ['Admin'] },
+    { id: 'roles', icon: '🔐', label: 'Roles & Permissions', description: 'Access Matrix', roles: ['Admin'] },
+    { id: 'audit', icon: '�', label: 'Audit Logs', description: 'Security Trail', roles: ['Admin'] },
   ]
 
+  // Filter menu items based on user role
+  const menuItems = allMenuItems.filter(item => 
+    item.roles.includes(user?.role_name)
+  )
+
+  // DEBUG: Log user info
+  console.log('👤 Sidebar user:', user)
+  console.log('📋 Menu items:', menuItems)
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(true)
+  }
+
+  const confirmLogout = async () => {
+    await logout()
+    setShowLogoutConfirm(false)
+  }
+
+  const getRoleIcon = (roleName) => {
+    const icons = {
+      'Doctor': '👨‍⚕️',
+      'Nurse': '👩‍⚕️',
+      'Admin': '⚙️',
+      'Receptionist': '👩',
+      'Billing': '💰'
+    }
+    return icons[roleName] || '👤'
+  }
+
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo">
-          <span className="logo-icon">🏥</span>
-          <div className="logo-text">
-            <h2>Hospital RBAC</h2>
-            <p>Access Control System</p>
-          </div>
-        </div>
-      </div>
-
-      <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            className={`nav-item ${activeView === item.id ? 'active' : ''}`}
-            onClick={() => setActiveView(item.id)}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <div className="nav-content">
-              <span className="nav-label">{item.label}</span>
-              <span className="nav-description">{item.description}</span>
+    <>
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <div className="logo">
+            <span className="logo-icon">🏥</span>
+            <div className="logo-text">
+              <h2>Hospital RBAC</h2>
+              <p>Access Control System</p>
             </div>
-          </button>
-        ))}
-      </nav>
+          </div>
+        </div>
 
-      <div className="sidebar-footer">
-        <div className="user-profile">
-          <div className="user-avatar">👤</div>
-          <div className="user-info">
-            <span className="user-name">Admin User</span>
-            <span className="user-role">System Administrator</span>
+        <nav className="sidebar-nav">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              className={`nav-item ${activeView === item.id ? 'active' : ''}`}
+              onClick={() => setActiveView(item.id)}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <div className="nav-content">
+                <span className="nav-label">{item.label}</span>
+                <span className="nav-description">{item.description}</span>
+              </div>
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="user-profile">
+            <div className="user-avatar">{getRoleIcon(user?.role_name)}</div>
+            <div className="user-info">
+              <span className="user-name">{user?.username || 'User'}</span>
+              <span className="user-role">{user?.role_name || 'Role'}</span>
+            </div>
+            <button 
+              className="logout-button" 
+              onClick={handleLogout}
+              title="Logout"
+            >
+              🚪
+            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {showLogoutConfirm && (
+        <div className="logout-modal">
+          <div className="logout-modal-content">
+            <h3>Confirm log out</h3>
+            <p>Are you sure you want to log out?</p>
+            <div className="logout-modal-actions">
+              <button 
+                className="btn-cancel" 
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-confirm" 
+                onClick={confirmLogout}
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

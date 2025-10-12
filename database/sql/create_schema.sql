@@ -17,8 +17,10 @@ CREATE TABLE Patients (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     date_of_birth DATE,
-    address TEXT,
+    gender VARCHAR(10),
     phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES Users(user_id),  -- Audit: Ai tạo
@@ -28,9 +30,11 @@ CREATE TABLE Patients (
 CREATE TABLE Appointments (
     appointment_id SERIAL PRIMARY KEY,
     patient_id INTEGER REFERENCES Patients(patient_id) ON DELETE CASCADE,
-    doctor_id INTEGER REFERENCES Users(user_id),  -- Giả sử doctor là user
-    appointment_date TIMESTAMP NOT NULL,
-    status VARCHAR(20) DEFAULT 'Scheduled',  -- e.g., 'Scheduled', 'Completed'
+    doctor_id INTEGER REFERENCES Users(user_id),
+    appointment_date DATE NOT NULL,
+    appointment_time TIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'Scheduled',  -- 'Scheduled', 'Completed', 'Cancelled', 'No-Show'
+    reason TEXT,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -42,9 +46,11 @@ CREATE TABLE MedicalRecords (
     record_id SERIAL PRIMARY KEY,
     patient_id INTEGER REFERENCES Patients(patient_id) ON DELETE CASCADE,
     doctor_id INTEGER REFERENCES Users(user_id),
-    diagnosis TEXT,
-    treatment_notes TEXT,
-    record_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    diagnosis TEXT NOT NULL,
+    treatment TEXT,
+    prescription TEXT,
+    notes TEXT,
+    record_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES Users(user_id),
@@ -62,4 +68,3 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON Patients FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON Appointments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_medicalrecords_updated_at BEFORE UPDATE ON MedicalRecords FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-

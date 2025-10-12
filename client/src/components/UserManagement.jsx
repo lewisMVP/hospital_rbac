@@ -3,12 +3,17 @@ import { useAPI } from '../hooks/useAPI';
 import { userAPI, roleAPI } from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
+import UserModal from './UserModal';
+import ConfirmModal from './ConfirmModal';
 import './UserManagement.css';
 
 const UserManagement = () => {
   const [activeTab, setActiveTab] = useState('users');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
   
   // Fetch data from API
   const { data: users, loading: usersLoading, error: usersError, refetch: refetchUsers } = useAPI(userAPI.getAll);
@@ -24,15 +29,45 @@ const UserManagement = () => {
   // Get unique roles for filter dropdown
   const uniqueRoles = [...new Set(roles?.map(r => r.role_name) || [])];
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await userAPI.delete(userId);
-        refetchUsers();
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Failed to delete user');
+  // Handlers for User CRUD
+  const handleCreateUser = () => {
+    setSelectedUser(null);
+    setIsUserModalOpen(true);
+  };
+
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setIsUserModalOpen(true);
+  };
+
+  const handleSaveUser = async (userData) => {
+    try {
+      if (selectedUser) {
+        // Update existing user
+        await userAPI.update(selectedUser.user_id, userData);
+      } else {
+        // Create new user
+        await userAPI.create(userData);
       }
+      refetchUsers();
+      setIsUserModalOpen(false);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to save user');
+    }
+  };
+
+  const handleDeleteUser = (user) => {
+    setUserToDelete(user);
+  };
+
+  const confirmDeleteUser = async () => {
+    try {
+      await userAPI.delete(userToDelete.user_id);
+      refetchUsers();
+      setUserToDelete(null);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user');
     }
   };
 
@@ -74,6 +109,13 @@ const UserManagement = () => {
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div className="users-section">
+          {/* Header with Create Button */}
+          <div className="section-header">
+            <button className="btn-create" onClick={handleCreateUser}>
+              ➕ New User
+            </button>
+          </div>
+
           {/* Filters */}
           <div className="filters">
             <div className="search-box">
@@ -126,11 +168,17 @@ const UserManagement = () => {
                     </div>
                   </div>
                   <div className="user-actions">
-                    <button className="btn-edit" title="Edit user">✏️</button>
+                    <button 
+                      className="btn-edit" 
+                      title="Edit user"
+                      onClick={() => handleEditUser(user)}
+                    >
+                      ✏️
+                    </button>
                     <button 
                       className="btn-delete" 
                       title="Delete user"
-                      onClick={() => handleDeleteUser(user.user_id)}
+                      onClick={() => handleDeleteUser(user)}
                     >
                       🗑️
                     </button>
@@ -183,6 +231,26 @@ const UserManagement = () => {
           </div>
         </div>
       )}
+
+      {/* User Modal */}
+      <UserModal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        onSave={handleSaveUser}
+        user={selectedUser}
+        roles={roles}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={confirmDeleteUser}
+        title="Delete User"
+        message={`Are you sure you want to delete user "${userToDelete?.username}"? This action cannot be undone.`}
+        confirmText="Delete"
+        type="danger"
+      />
     </div>
   );
 };
