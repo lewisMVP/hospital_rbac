@@ -2,31 +2,47 @@
 
 A modern, secure Role-Based Access Control (RBAC) system for hospital management with React frontend, Flask backend, and PostgreSQL database.
 
-## Features
+## ✨ Features
 
+### Core Functionality
 - **Modern UI**: React-based interface with Apple-inspired design system
 - **RBAC Implementation**: Secure role-based access control (Admin, Doctor, Nurse, Receptionist, Billing)
 - **Real-time Dashboard**: Statistics, activities, and role distribution monitoring
 - **User Management**: Complete CRUD operations for users and roles
 - **Permission Matrix**: Visual permission management interface
-- **Audit Logging**: Comprehensive tracking of all system activities
-- **Security Alerts**: Failed login detection and unauthorized access monitoring
-- **PostgreSQL Backend**: Robust database with triggers and stored procedures
+- **Audit Logging**: Comprehensive tracking of all system activities with failed login detection
+- **Security Alerts**: Real-time monitoring of unauthorized access attempts
 
-## Tech Stack
+### Hospital Management Modules
+- **👥 Patient Management**: Register and manage patient records with full CRUD operations
+- **📅 Appointment Scheduling**: Schedule, update, and track patient appointments
+- **📋 Medical Records**: Manage patient diagnoses, treatments, prescriptions, and notes
+- **🔐 Authentication & Authorization**: JWT-based secure login with role-based access
+- **📊 Dashboard Analytics**: Real-time statistics and activity monitoring
+
+## 🛠️ Tech Stack
 
 ### Frontend
 - **React 19.1.1** - UI framework
-- **Vite 7.1.14** - Build tool
-- **React Router 7.1.1** - Navigation
-- **Lucide React** - Icons
-- **Apple Design System** - Glassmorphism, SF Pro fonts
+- **Vite 7.1.14** - Build tool and dev server
+- **React Router 7.1.1** - Client-side routing
+- **Axios 1.7.9** - HTTP client for API requests
+- **Lucide React** - Modern icon library
+- **Apple Design System** - Glassmorphism, SF Pro fonts, smooth animations
 
 ### Backend
 - **Flask 3.0.0** - Python web framework
-- **PostgreSQL 14+** - Database
-- **psycopg2-binary 2.9.9** - Database adapter
-- **Flask-CORS 4.0.0** - Cross-origin support
+- **PostgreSQL 14+** - Relational database
+- **psycopg2-binary 2.9.9** - PostgreSQL adapter
+- **Flask-CORS 4.0.0** - Cross-origin resource sharing
+- **Flask-JWT-Extended 4.6.0** - JWT authentication
+- **bcrypt 4.1.2** - Password hashing
+
+### Security
+- **JWT Tokens**: Secure authentication with 24-hour expiration
+- **bcrypt**: Industry-standard password hashing (cost factor: 12)
+- **Audit Logging**: Comprehensive activity tracking with failed login detection
+- **Role-based Permissions**: Granular access control per table and operation
 
 ## 📁 Project Structure
 
@@ -147,6 +163,31 @@ npm run dev
 
 **Open browser:** Navigate to [http://localhost:5173](http://localhost:5173)
 
+## 🔑 Default Login Credentials
+
+Use these credentials to test different role permissions:
+
+| Role | Username | Password | Access Level |
+|------|----------|----------|--------------|
+| **Admin** | `admin` | `admin123` | Full system access - all modules, all operations |
+| **Doctor** | `doctor1` | `doctor123` | Patients (view), Appointments (view), Medical Records (full CRUD) |
+| **Nurse** | `nurse1` | `nurse123` | Patients (view), Appointments (view), Medical Records (view) |
+| **Receptionist** | `receptionist1` | `recep123` | Patients (full CRUD), Appointments (full CRUD) |
+
+**⚠️ Security Warning**: Change these default passwords immediately in production!
+
+## 📊 Role Permission Matrix
+
+| Module | Admin | Doctor | Nurse | Receptionist | Billing |
+|--------|-------|--------|-------|--------------|---------|
+| **Dashboard** | ✅ View | ✅ View | ✅ View | ✅ View | ✅ View |
+| **Users** | ✅ Full CRUD | ❌ | ❌ | ❌ | ❌ |
+| **Roles** | ✅ Full CRUD | ❌ | ❌ | ❌ | ❌ |
+| **Patients** | ✅ Full CRUD | 👁️ View Only | 👁️ View Only | ✅ Full CRUD | 👁️ View Only |
+| **Appointments** | ✅ Full CRUD | 👁️ View Only | 👁️ View Only | ✅ Full CRUD | ❌ |
+| **Medical Records** | ✅ Full CRUD | ✅ Create/Update/View | 👁️ View Only | ❌ | ❌ |
+| **Audit Log** | ✅ Full Access | ❌ | ❌ | ❌ | ❌ |
+
 ## Security Best Practices
 
 ### IMPORTANT - Before Pushing to Git
@@ -225,7 +266,15 @@ git commit -m "Add .gitignore for security"
 - `GET /api/audit/alerts` - Security alerts
 - `GET /api/audit/failed-logins` - Failed login attempts
 
-## Testing
+## 🧪 Testing
+
+### Test Default Login
+```bash
+# Test with different roles
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}'
+```
 
 ### Test Database Functionality
 
@@ -240,46 +289,200 @@ psql -U postgres -d hospital_rbac -f database/demo/audit_failed_login.sql
 ### Test API Endpoints
 
 ```bash
-# Using curl (backend must be running)
-curl http://localhost:5000/api/dashboard/stats
-curl http://localhost:5000/api/users
-curl http://localhost:5000/api/roles
+# Get JWT token first
+TOKEN=$(curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}' \
+  | jq -r '.token')
+
+# Test protected endpoints
+curl http://localhost:5000/api/dashboard/stats \
+  -H "Authorization: Bearer $TOKEN"
+
+curl http://localhost:5000/api/patients \
+  -H "Authorization: Bearer $TOKEN"
+
+curl http://localhost:5000/api/appointments \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-## Troubleshooting
+### Manual Testing Checklist
+
+✅ **Authentication**
+- [ ] Login with valid credentials
+- [ ] Login with invalid credentials (check audit log)
+- [ ] Logout functionality
+- [ ] Token expiration after 24 hours
+
+✅ **Role-Based Access**
+- [ ] Admin can access all modules
+- [ ] Doctor can create/edit medical records
+- [ ] Nurse can only view medical records
+- [ ] Receptionist can manage patients and appointments
+
+✅ **CRUD Operations**
+- [ ] Create new patient (as Admin or Receptionist)
+- [ ] Update patient information
+- [ ] Create appointment for existing patient
+- [ ] Create medical record (as Admin or Doctor)
+- [ ] Verify audit logs for all operations
+
+✅ **Audit Logging**
+- [ ] Successful login creates audit entry
+- [ ] Failed login creates audit entry with status='failed'
+- [ ] CRUD operations logged with correct event_type
+- [ ] Filter audit logs by event type, user, status
+
+## 🐛 Troubleshooting
 
 ### Backend won't start
-- Check PostgreSQL is running: `pg_isready`
-- Verify database exists: `psql -l | grep hospital_rbac`
-- Check `.env` file has correct credentials
-- Ensure virtual environment is activated
+```bash
+# Check PostgreSQL is running
+pg_isready
+
+# Verify database exists
+psql -l | grep hospital_rbac
+
+# Check if port 5000 is already in use (Windows)
+netstat -ano | findstr :5000
+
+# Check Python virtual environment is activated
+which python  # Should show path to venv
+```
+
+**Solutions:**
+- Ensure PostgreSQL service is running
+- Verify `.env` file has correct DB credentials
+- Check virtual environment is activated: `.\venv\Scripts\activate`
+- Kill process using port 5000 if needed
 
 ### Frontend can't connect to backend
+```bash
+# Verify backend is running
+curl http://localhost:5000/api/dashboard/stats
+
+# Check CORS headers
+curl -I http://localhost:5000/api/dashboard/stats
+```
+
+**Solutions:**
 - Verify backend is running on port 5000
-- Check `client/.env` has correct `VITE_API_URL`
-- Check browser console for CORS errors
-- Ensure Flask-CORS is installed
+- Check `client/.env` has `VITE_API_URL=http://localhost:5000/api`
+- Ensure Flask-CORS is installed: `pip list | grep Flask-CORS`
+- Clear browser cache and restart dev server
 
 ### Database connection errors
-- Verify PostgreSQL service is running
-- Check DB_PASSWORD in `server/.env`
-- Ensure `hospital_rbac` database exists
-- Check PostgreSQL is listening on port 5432
-
-### Permission denied errors
 ```bash
-# Windows PowerShell execution policy
+# Test database connection
+psql -U postgres -d hospital_rbac -c "SELECT 1"
+
+# Check PostgreSQL is listening
+netstat -an | findstr :5432
+```
+
+**Common errors:**
+- `psycopg2.OperationalError`: Wrong password or database doesn't exist
+- `could not connect to server`: PostgreSQL service not running
+- `database "hospital_rbac" does not exist`: Run setup scripts
+
+**Solutions:**
+- Check DB_PASSWORD in `server/.env` matches PostgreSQL password
+- Ensure PostgreSQL service is running: `pg_ctl status`
+- Recreate database if needed: `createdb hospital_rbac`
+
+### "Object of type time is not JSON serializable"
+**Fixed in latest version** - The `database.py` utility now automatically converts:
+- `date` → ISO format string (YYYY-MM-DD)
+- `time` → Time string (HH:MM:SS)
+- `datetime` → ISO format string
+- `Decimal` → float
+
+### Failed login not showing in audit log
+**Fixed** - Ensure:
+- Backend has debug logging enabled (check terminal output)
+- Status filter in Audit Log UI uses lowercase 'failed'
+- Database has audit triggers installed
+
+### Permission denied errors (Windows PowerShell)
+```powershell
+# Allow script execution
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## Documentation
+### "Invalid patient_id or doctor_id format"
+**Fixed** - Backend now converts string IDs from forms to integers automatically.
+
+If you still see this error:
+- Check frontend is sending `patient_id` and `doctor_id` as strings (from select elements)
+- Verify backend is running latest code with integer conversion
+
+## 📚 Documentation
 
 - **Database Schema**: See `database/sql/create_schema.sql`
+  - Users, Roles, Permissions tables
+  - Patients, Appointments, MedicalRecords tables
+  - AuditLog table with triggers
+  
 - **RBAC Design**: See `database/sql/role_permission.sql`
+  - Role creation (Admin, Doctor, Nurse, Receptionist, Billing)
+  - Permission grants per role and table
+  - Row-level security policies
+  
 - **Audit System**: See `database/sql/create_audit_table.sql`
-- **API Documentation**: See `server/README.md`
+  - Automatic logging of all CRUD operations
+  - Failed login detection and tracking
+  - Security alert generation
+  
+- **API Documentation**: See individual route files in `server/app/routes/`
 
-## Contributing
+## 🏗️ Database Schema
+
+### Core Tables
+- **users**: User accounts with hashed passwords (bcrypt)
+- **roles**: Role definitions (Admin, Doctor, Nurse, etc.)
+- **user_roles**: User-role assignments (many-to-many)
+- **permissions**: Table-level and operation-level permissions
+- **role_permissions**: Role-permission assignments
+
+### Hospital Management Tables
+- **patients**: Patient information (name, DOB, gender, contact, email)
+- **appointments**: Patient appointments (date, time, status, reason)
+- **medicalrecords**: Medical history (diagnosis, treatment, prescription, notes)
+
+### Audit & Security
+- **auditlog**: Comprehensive activity logging
+  - event_type: LOGIN, LOGOUT, INSERT, UPDATE, DELETE
+  - status: 'success' or 'failed'
+  - username, table_name, details, event_time
+
+## 🔒 Security Features
+
+1. **Password Security**
+   - bcrypt hashing with cost factor 12
+   - Passwords never stored in plain text
+   - Minimum password requirements enforced
+
+2. **JWT Authentication**
+   - 24-hour token expiration
+   - Tokens include user_id, username, and role
+   - Automatic token refresh on API calls
+
+3. **Role-Based Authorization**
+   - Decorator-based permission checks
+   - `@token_required` for authentication
+   - `@role_required(['Admin'])` for authorization
+
+4. **Audit Logging**
+   - All authentication attempts logged
+   - CRUD operations tracked with user attribution
+   - Failed login detection for security monitoring
+
+5. **Input Validation**
+   - Type conversion (string → integer) for IDs
+   - Required field validation
+   - SQL injection prevention via parameterized queries
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
@@ -289,9 +492,10 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 **Before submitting:**
 - Ensure code follows existing style
-- Test all changes thoroughly
+- Test all changes thoroughly  
 - Update documentation if needed
 - Never commit `.env` files
+- Add appropriate audit logging for new features
 
 
 ## Author
