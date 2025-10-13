@@ -109,3 +109,58 @@ def get_role_permissions(role_id):
         'success': True,
         'data': permissions
     })
+
+@bp.route('/<int:role_id>', methods=['DELETE'])
+@role_required(['Admin'])  # Only Admin can delete roles
+@handle_errors
+def delete_role(role_id):
+    """Delete a role"""
+    from flask import g
+    
+    # Check if role exists
+    check_query = "SELECT role_name FROM roles WHERE role_id = %s"
+    role = execute_query(check_query, (role_id,), fetch_one=True)
+    
+    if not role:
+        return jsonify({
+            'success': False,
+            'error': 'Role not found'
+        }), 404
+    
+    role_name = role['role_name']
+    
+    # Check if role is in use
+    users_query = "SELECT COUNT(*) as count FROM users WHERE role_id = %s"
+    result = execute_query(users_query, (role_id,), fetch_one=True)
+    
+    if result['count'] > 0:
+        return jsonify({
+            'success': False,
+            'error': f'Cannot delete role. {result["count"]} user(s) are assigned to this role.'
+        }), 400
+    
+    # Delete role (CASCADE will delete related permissions)
+    delete_query = "DELETE FROM roles WHERE role_id = %s"
+    execute_query(delete_query, (role_id,))
+    
+    # Log audit
+    try:
+        username = g.current_user.get('username', 'Unknown') if hasattr(g, 'current_user') else 'Unknown'
+        audit_query = """
+            INSERT INTO auditlog (event_type, table_name, username, status, details)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        execute_query(audit_query, (
+            'DELETE',
+            'roles',
+            username,
+            'success',
+            f'Deleted role: {role_name} (ID: {role_id})'
+        ))
+    except Exception as e:
+        print(f"Audit log error: {e}")
+    
+    return jsonify({
+        'success': True,
+        'message': f'Role "{role_name}" deleted successfully'
+    })

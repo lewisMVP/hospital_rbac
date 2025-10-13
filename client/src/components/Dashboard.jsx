@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react'
 import './Dashboard.css'
 import { dashboardAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
-import LoadingSpinner from './LoadingSpinner'
 import ErrorMessage from './ErrorMessage'
 
 const Dashboard = ({ setActiveView }) => {
@@ -121,7 +120,11 @@ const Dashboard = ({ setActiveView }) => {
   }
 
   if (loading) {
-    return <LoadingSpinner />
+    return (
+      <div className="dashboard-container">
+        <div className="loading">Loading dashboard...</div>
+      </div>
+    );
   }
 
   if (error) {

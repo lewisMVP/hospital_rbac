@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useAPI } from '../hooks/useAPI';
 import { userAPI, roleAPI } from '../services/api';
-import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import UserModal from './UserModal';
 import ConfirmModal from './ConfirmModal';
 import './UserManagement.css';
 
 const UserManagement = () => {
-  const [activeTab, setActiveTab] = useState('users');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -17,7 +15,7 @@ const UserManagement = () => {
   
   // Fetch data from API
   const { data: users, loading: usersLoading, error: usersError, refetch: refetchUsers } = useAPI(userAPI.getAll);
-  const { data: roles, loading: rolesLoading, error: rolesError } = useAPI(roleAPI.getAll);
+  const { data: roles } = useAPI(roleAPI.getAll);
 
   // Filter users based on search and role
   const filteredUsers = users?.filter(user => {
@@ -71,43 +69,21 @@ const UserManagement = () => {
     }
   };
 
-  const handleDeleteRole = async (roleId) => {
-    if (window.confirm('Are you sure you want to delete this role?')) {
-      try {
-        await roleAPI.delete(roleId);
-        window.location.reload(); // Refresh to update roles
-      } catch (error) {
-        console.error('Error deleting role:', error);
-        alert('Failed to delete role');
-      }
-    }
-  };
-
-  if (activeTab === 'users' && usersLoading) return <LoadingSpinner />;
-  if (activeTab === 'roles' && rolesLoading) return <LoadingSpinner />;
-  if (activeTab === 'users' && usersError) return <ErrorMessage error={usersError} onRetry={refetchUsers} fullScreen />;
-  if (activeTab === 'roles' && rolesError) return <ErrorMessage error={rolesError} onRetry={() => window.location.reload()} fullScreen />;
+  if (usersLoading) {
+    return (
+      <div className="user-dashboard-container">
+        <div className="loading">Loading users...</div>
+      </div>
+    );
+  }
+  if (usersError) return <ErrorMessage error={usersError} onRetry={refetchUsers} fullScreen />;
 
   return (
     <div className="user-management">
-      {/* Tabs */}
-      <div className="tabs">
-        <button
-          className={`tab ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          👥 Users
-        </button>
-        <button
-          className={`tab ${activeTab === 'roles' ? 'active' : ''}`}
-          onClick={() => setActiveTab('roles')}
-        >
-          🔑 Roles
-        </button>
-      </div>
-
-      {/* Users Tab */}
-      {activeTab === 'users' && (
+      {/* Header */}
+      
+      {/* Users Section */}
+      <div className="users-section">
         <div className="users-section">
           {/* Header with Create Button */}
           <div className="section-header">
@@ -188,69 +164,27 @@ const UserManagement = () => {
             )}
           </div>
         </div>
-      )}
 
-      {/* Roles Tab */}
-      {activeTab === 'roles' && (
-        <div className="roles-section">
-          <div className="roles-grid">
-            {!roles || roles.length === 0 ? (
-              <div className="no-results">
-                <p>No roles found</p>
-              </div>
-            ) : (
-              roles.map((role) => (
-                <div key={role.role_id} className="role-card">
-                  <div className="role-header">
-                    <h3>{role.role_name}</h3>
-                    <button 
-                      className="btn-delete-role"
-                      onClick={() => handleDeleteRole(role.role_id)}
-                      title="Delete role"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                  <p className="role-description">{role.description || 'No description'}</p>
-                  <div className="role-stats">
-                    <div className="stat">
-                      <span className="stat-label">Users</span>
-                      <span className="stat-value">{role.user_count || 0}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Permissions</span>
-                      <span className="stat-value">{role.permission_count || 0}</span>
-                    </div>
-                  </div>
-                  <div className="role-actions">
-                    <button className="btn-edit-role">Edit Permissions</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+        {/* User Modal */}
+        <UserModal
+          isOpen={isUserModalOpen}
+          onClose={() => setIsUserModalOpen(false)}
+          onSave={handleSaveUser}
+          user={selectedUser}
+          roles={roles}
+        />
 
-      {/* User Modal */}
-      <UserModal
-        isOpen={isUserModalOpen}
-        onClose={() => setIsUserModalOpen(false)}
-        onSave={handleSaveUser}
-        user={selectedUser}
-        roles={roles}
-      />
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmModal
-        isOpen={!!userToDelete}
-        onClose={() => setUserToDelete(null)}
-        onConfirm={confirmDeleteUser}
-        title="Delete User"
-        message={`Are you sure you want to delete user "${userToDelete?.username}"? This action cannot be undone.`}
-        confirmText="Delete"
-        type="danger"
-      />
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          isOpen={!!userToDelete}
+          onClose={() => setUserToDelete(null)}
+          onConfirm={confirmDeleteUser}
+          title="Delete User"
+          message={`Are you sure you want to delete user "${userToDelete?.username}"? This action cannot be undone.`}
+          confirmText="Delete"
+          type="danger"
+        />
+      </div>
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAPI } from '../hooks/useAPI';
 import { auditAPI } from '../services/api';
-import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import './AuditLog.css';
 
@@ -120,7 +119,13 @@ const AuditLog = () => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) {
+    return (
+      <div className="audit-log-container">
+        <div className="loading">Loading audit logs...</div>
+      </div>
+    );
+  }
   if (error) return <ErrorMessage error={error} />;
 
   return (
