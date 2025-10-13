@@ -534,9 +534,27 @@
   color: #86868b;
 }
 
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #86868b;
+  font-weight: 500;
+}
+
 .pagination {
   display: flex;
-  gap: 4px;
+  gap: 12px;
+  align-items: center;
 }
 
 .page-btn {

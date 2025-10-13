@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAPI } from '../hooks/useAPI';
 import { auditAPI } from '../services/api';
 import ErrorMessage from './ErrorMessage';
@@ -8,13 +8,18 @@ const AuditLog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filterType, setFilterType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const itemsPerPage = 10;
+  const itemsPerPage = 20; // Số records hiển thị mỗi trang
+  const maxRecords = 1000; // Fetch tối đa 1000 records từ DB
 
-  // Fetch data from API
+  // Reset to page 1 when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, searchTerm]);
+
+  // Fetch data from API - lấy nhiều records hơn
   const { data: auditLogs, loading, error } = useAPI(() => 
     auditAPI.getAll({ 
-      page: currentPage, 
-      limit: itemsPerPage,
+      limit: maxRecords, // Fetch all available records (up to 1000)
       event_type: filterType !== 'all' ? filterType : undefined,
       search: searchTerm || undefined
     })
@@ -47,7 +52,11 @@ const AuditLog = () => {
     return matchesType && matchesSearch;
   }) || [];
 
+  // Pagination logic
   const totalPages = Math.ceil((filteredLogs?.length || 0) / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
 
   const getSeverityClass = (severity) => {
     const severityMap = {
@@ -227,14 +236,14 @@ const AuditLog = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredLogs.length === 0 ? (
+            {paginatedLogs.length === 0 ? (
               <tr>
                 <td colSpan="6" className="no-data">
                   No audit logs found
                 </td>
               </tr>
             ) : (
-              filteredLogs.map((log) => (
+              paginatedLogs.map((log) => (
                 <tr key={log.audit_id}>
                   <td>
                     <span className="event-badge">
@@ -265,27 +274,32 @@ const AuditLog = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            className="pagination-btn"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            ← Previous
-          </button>
-          <span className="page-info">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="pagination-btn"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next →
-          </button>
+      <div className="pagination-container">
+        <div className="pagination-info">
+          Showing {startIndex + 1}-{Math.min(endIndex, filteredLogs.length)} of {filteredLogs.length} records
         </div>
-      )}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              ← Previous
+            </button>
+            <span className="page-info">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next →
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
