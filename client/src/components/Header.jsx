@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import { auditAPI } from '../services/api'
 import './Header.css'
 
 const Header = ({ activeView }) => {
+  const { user } = useAuth()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [notifications, setNotifications] = useState([])
@@ -25,8 +27,16 @@ const Header = ({ activeView }) => {
   const notifRef = useRef(null)
   const settingsRef = useRef(null)
 
-  // Fetch real notifications from audit log
+  // Check if user is Admin (only Admin can access audit log)
+  const isAdmin = user?.roles === 'Admin' || user?.role_name === 'Admin'
+
+  // Fetch real notifications from audit log (only for Admin)
   useEffect(() => {
+    if (!isAdmin) {
+      // Non-admin users don't have access to audit log
+      return
+    }
+
     const fetchNotifications = async () => {
       try {
         const response = await auditAPI.getAll({ limit: 10 })
@@ -47,6 +57,9 @@ const Header = ({ activeView }) => {
         }
       } catch (error) {
         console.error('Failed to fetch notifications:', error)
+        // Clear notifications on error (likely permission denied)
+        setNotifications([])
+        setNotificationCount(0)
       }
     }
 
@@ -54,7 +67,7 @@ const Header = ({ activeView }) => {
     // Refresh every 30 seconds
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [isAdmin])
 
   // Format notification text based on audit log
   const formatNotificationText = (log) => {
@@ -183,7 +196,7 @@ const Header = ({ activeView }) => {
               title="Notifications"
             >
               <span className="btn-icon">🔔</span>
-              {notificationCount > 0 && (
+              {isAdmin && notificationCount > 0 && (
                 <span className="notification-badge">{notificationCount}</span>
               )}
             </button>
@@ -198,7 +211,13 @@ const Header = ({ activeView }) => {
                   >✕</button>
                 </div>
                 <div className="notifications-list">
-                  {notifications.length === 0 ? (
+                  {!isAdmin ? (
+                    <div className="no-notifications">
+                      <span className="no-notif-icon">🔒</span>
+                      <p>Admin Access Only</p>
+                      <small>System notifications require administrator privileges</small>
+                    </div>
+                  ) : notifications.length === 0 ? (
                     <div className="no-notifications">
                       <span className="no-notif-icon">🔕</span>
                       <p>No new notifications</p>
@@ -212,18 +231,20 @@ const Header = ({ activeView }) => {
                     ))
                   )}
                 </div>
-                <div className="dropdown-footer">
-                  <button 
-                    className="btn-view-all"
-                    onClick={() => {
-                      setShowNotifications(false)
-                      // Navigate to audit log - you can add navigation logic here
-                      window.location.hash = '#audit'
-                    }}
-                  >
-                    View All in Audit Log
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="dropdown-footer">
+                    <button 
+                      className="btn-view-all"
+                      onClick={() => {
+                        setShowNotifications(false)
+                        // Navigate to audit log - you can add navigation logic here
+                        window.location.hash = '#audit'
+                      }}
+                    >
+                      View All in Audit Log
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

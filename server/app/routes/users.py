@@ -5,6 +5,29 @@ from app.utils.auth import token_required, role_required, hash_password
 
 bp = Blueprint('users', __name__, url_prefix='/api/users')
 
+@bp.route('/doctors', methods=['GET'])
+@token_required  # Any authenticated user can view doctors list
+@handle_errors
+def get_doctors():
+    """Get all doctors - accessible by authenticated users for appointments/medical records"""
+    query = """
+        SELECT 
+            u.user_id,
+            u.username,
+            r.role_name
+        FROM users u
+        LEFT JOIN roles r ON u.role_id = r.role_id
+        WHERE r.role_name = 'Doctor'
+        ORDER BY u.username
+    """
+    
+    doctors = execute_query(query)
+    
+    return jsonify({
+        'success': True,
+        'data': doctors
+    })
+
 @bp.route('/', methods=['GET'])
 @role_required(['Admin'])  # Only Admin can view users
 @handle_errors

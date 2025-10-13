@@ -65,11 +65,11 @@ export default function MedicalRecords() {
 
   const fetchDoctors = async () => {
     try {
-      const response = await api.get('/users/');
+      // Use dedicated /doctors endpoint instead of /users/ to avoid permission issues
+      const response = await api.get('/users/doctors');
       if (response.data.success) {
-        // Filter only doctors
-        const doctorUsers = response.data.users.filter(u => u.role_name === 'Doctor');
-        setDoctors(doctorUsers);
+        const doctors = response.data.data || [];
+        setDoctors(doctors);
       }
     } catch (err) {
       console.error('Failed to fetch doctors:', err);

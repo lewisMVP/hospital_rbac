@@ -65,13 +65,19 @@ export default function Appointments() {
 
   const fetchDoctors = async () => {
     try {
-      const response = await api.get('/users/');
+      // Use dedicated /doctors endpoint instead of /users/ to avoid permission issues
+      const response = await api.get('/users/doctors');
+      console.log('=== FETCH DOCTORS DEBUG ===');
+      console.log('Doctors response:', response.data);
+      
       if (response.data.success) {
-        const doctorUsers = response.data.users.filter(u => u.role_name === 'Doctor');
-        setDoctors(doctorUsers);
+        const doctors = response.data.data || [];
+        console.log('Doctors found:', doctors.length);
+        setDoctors(doctors);
       }
     } catch (err) {
       console.error('Failed to fetch doctors:', err);
+      console.error('Error details:', err.response?.data);
     }
   };
 
@@ -328,18 +334,25 @@ export default function Appointments() {
                 </div>
                 
                 <div className="form-group">
-                  <label>Doctor</label>
+                  <label>Doctor {doctors.length > 0 && `(${doctors.length} available)`}</label>
                   <select
                     value={formData.doctor_id}
                     onChange={(e) => setFormData({...formData, doctor_id: e.target.value})}
                   >
                     <option value="">Select Doctor</option>
-                    {doctors.map(d => (
-                      <option key={d.user_id} value={d.user_id}>
-                        {d.username}
-                      </option>
-                    ))}
+                    {doctors.length === 0 ? (
+                      <option disabled>No doctors available</option>
+                    ) : (
+                      doctors.map(d => (
+                        <option key={d.user_id} value={d.user_id}>
+                          {d.username}
+                        </option>
+                      ))
+                    )}
                   </select>
+                  {doctors.length === 0 && (
+                    <small style={{color: 'red'}}>⚠️ No doctors found in the system</small>
+                  )}
                 </div>
                 
                 <div className="form-group">
