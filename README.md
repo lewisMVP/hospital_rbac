@@ -2,6 +2,8 @@
 
 A modern, secure Role-Based Access Control (RBAC) system for hospital management with React frontend, Flask backend, and PostgreSQL database.
 
+<img width="2876" height="1568" alt="image" src="https://github.com/user-attachments/assets/6f9caf67-f457-47bf-ab8c-5db3639568eb" />
+
 ## ✨ Features
 
 ### Core Functionality
