@@ -24,7 +24,7 @@ const Login = () => {
       } else {
         setError(result.error || 'Invalid username or password');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
