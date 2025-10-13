@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import './Appointments.css';
+import './Modal.css';
 
 export default function Appointments() {
   const { user } = useAuth();

@@ -5,6 +5,7 @@ import './Sidebar.css'
 const Sidebar = ({ activeView, setActiveView }) => {
   const { user, logout } = useAuth()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const allMenuItems = [
     { id: 'dashboard', icon: '📊', label: 'Dashboard', description: 'Overview', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Billing'] },
@@ -47,7 +48,28 @@ const Sidebar = ({ activeView, setActiveView }) => {
 
   return (
     <>
-      <div className="sidebar">
+      {/* Mobile Menu Button */}
+      <button 
+        className="mobile-menu-button"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        <span className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mobile-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <div className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo">
             <span className="logo-icon">🏥</span>
@@ -63,7 +85,10 @@ const Sidebar = ({ activeView, setActiveView }) => {
             <button
               key={item.id}
               className={`nav-item ${activeView === item.id ? 'active' : ''}`}
-              onClick={() => setActiveView(item.id)}
+              onClick={() => {
+                setActiveView(item.id);
+                setIsMobileMenuOpen(false);
+              }}
             >
               <span className="nav-icon">{item.icon}</span>
               <div className="nav-content">

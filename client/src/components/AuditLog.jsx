@@ -79,6 +79,47 @@ const AuditLog = () => {
     return iconMap[eventType] || '📝';
   };
 
+  // CSV Export Function
+  const exportToCSV = () => {
+    if (!filteredLogs || filteredLogs.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    // CSV Headers
+    const headers = ['Audit ID', 'Event Type', 'Username', 'Table', 'Status', 'Details', 'Timestamp'];
+    
+    // CSV Rows
+    const rows = filteredLogs.map(log => [
+      log.audit_id,
+      log.event_type,
+      log.username || 'System',
+      log.table_name || 'N/A',
+      log.status || 'success',
+      (log.details || '').replace(/,/g, ';'), // Replace commas to avoid CSV issues
+      new Date(log.event_time).toLocaleString()
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `audit_log_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage error={error} />;
 
@@ -164,7 +205,7 @@ const AuditLog = () => {
           <option value="GRANT">Grants</option>
           <option value="REVOKE">Revokes</option>
         </select>
-        <button className="btn-export">📥 Export Logs</button>
+        <button className="btn-export" onClick={exportToCSV}>📥 Export Logs</button>
       </div>
 
       {/* Audit Table */}

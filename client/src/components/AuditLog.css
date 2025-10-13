@@ -1,6 +1,6 @@
 .audit-log {
   padding: 32px;
-  max-width: 1400px;
+  width: 100%;
   animation: fadeIn 0.3s ease-out;
 }
 
