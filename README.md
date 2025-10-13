@@ -169,10 +169,10 @@ Use these credentials to test different role permissions:
 
 | Role | Username | Password | Access Level |
 |------|----------|----------|--------------|
-| **Admin** | `admin` | `admin123` | Full system access - all modules, all operations |
-| **Doctor** | `doctor1` | `doctor123` | Patients (view), Appointments (view), Medical Records (full CRUD) |
-| **Nurse** | `nurse1` | `nurse123` | Patients (view), Appointments (view), Medical Records (view) |
-| **Receptionist** | `receptionist1` | `recep123` | Patients (full CRUD), Appointments (full CRUD) |
+| **Admin** | `admin` | `password` | Full system access - all modules, all operations |
+| **Doctor** | `doctor1` | `password` | Patients (view), Appointments (view), Medical Records (full CRUD) |
+| **Nurse** | `nurse1` | `password` | Patients (view), Appointments (view), Medical Records (view) |
+| **Receptionist** | `receptionist1` | `password` | Patients (full CRUD), Appointments (full CRUD) |
 
 **⚠️ Security Warning**: Change these default passwords immediately in production!
 
