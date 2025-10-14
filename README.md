@@ -4,7 +4,7 @@ A modern, secure Role-Based Access Control (RBAC) system for hospital management
 
 <img width="2876" height="1568" alt="image" src="https://github.com/user-attachments/assets/6f9caf67-f457-47bf-ab8c-5db3639568eb" />
 <img width="2879" height="1578" alt="image" src="https://github.com/user-attachments/assets/06c6d2bc-97f0-4583-9a21-6b7fc2dc8de1" />
-<img width="2877" height="1576" alt="image" src="https://github.com/user-attachments/assets/8d961222-a48b-4e59-b1b9-623f8f02abcd" />
+<img width="2877" height="1570" alt="image" src="https://github.com/user-attachments/assets/6527be21-90eb-4b26-b819-3db9376fbf6a" />
 <img width="2875" height="1570" alt="image" src="https://github.com/user-attachments/assets/787cd7f8-503b-4487-8664-177b65fb7388" />
 <img width="2879" height="1568" alt="image" src="https://github.com/user-attachments/assets/8df33577-4a19-4b00-8b3a-9b438adc551a" />
 
