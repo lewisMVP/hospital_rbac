@@ -54,7 +54,7 @@ function AppLayout() {
     <div className="app">
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
       <div className="main-content">
-        <Header activeView={activeView} />
+        <Header activeView={activeView} setActiveView={setActiveView} />
         <div className="content-area">
           {renderView()}
         </div>

@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { auditAPI } from '../services/api'
 import './Header.css'
 
-const Header = ({ activeView }) => {
+const Header = ({ activeView, setActiveView }) => {
   const { user } = useAuth()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -237,8 +237,7 @@ const Header = ({ activeView }) => {
                       className="btn-view-all"
                       onClick={() => {
                         setShowNotifications(false)
-                        // Navigate to audit log - you can add navigation logic here
-                        window.location.hash = '#audit'
+                        setActiveView('audit')
                       }}
                     >
                       View All in Audit Log
