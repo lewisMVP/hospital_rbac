@@ -117,6 +117,15 @@ const RoleMatrix = () => {
         </button>
       </div>
 
+      {/* Info Banner */}
+      <div className="info-banner">
+        <div className="info-icon">ℹ️</div>
+        <div className="info-content">
+          <strong>Note:</strong> Permissions are managed at the PostgreSQL database level using GRANT statements.
+          To modify permissions, please update the database roles directly.
+        </div>
+      </div>
+
       {/* Roles Grid */}
       <div className="roles-permission-grid">
         {roles && roles.length > 0 ? (
@@ -170,16 +179,6 @@ const RoleMatrix = () => {
           </div>
         )}
       </div>
-
-      {/* Info Banner */}
-      <div className="info-banner">
-        <div className="info-icon">ℹ️</div>
-        <div className="info-content">
-          <strong>Note:</strong> Permissions are managed at the PostgreSQL database level using GRANT statements.
-          To modify permissions, please update the database roles directly.
-        </div>
-      </div>
-
       {/* Create Role Modal */}
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
