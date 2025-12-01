@@ -182,7 +182,7 @@ Use these credentials to test different role permissions:
 
 **Security Warning**: Change these default passwords immediately in production!
 
-## 📊 Role Permission Matrix
+## Role Permission Matrix
 
 | Module | Admin | Doctor | Nurse | Receptionist | Billing |
 |--------|-------|--------|-------|--------------|---------|
