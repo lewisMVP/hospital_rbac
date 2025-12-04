@@ -19,11 +19,11 @@ A modern, secure Role-Based Access Control (RBAC) system for hospital management
 - **Security Alerts**: Real-time monitoring of unauthorized access attempts
 
 ### Hospital Management Modules
-- ** Patient Management**: Register and manage patient records with full CRUD operations
-- ** Appointment Scheduling**: Schedule, update, and track patient appointments
-- ** Medical Records**: Manage patient diagnoses, treatments, prescriptions, and notes
-- ** Authentication & Authorization**: JWT-based secure login with role-based access
-- ** Dashboard Analytics**: Real-time statistics and activity monitoring
+- **Patient Management**: Register and manage patient records with full CRUD operations
+- **Appointment Scheduling**: Schedule, update, and track patient appointments
+- **Medical Records**: Manage patient diagnoses, treatments, prescriptions, and notes
+- **Authentication & Authorization**: JWT-based secure login with role-based access
+- **Dashboard Analytics**: Real-time statistics and activity monitoring
 
 ##  Tech Stack
 
@@ -271,7 +271,7 @@ git commit -m "Add .gitignore for security"
 - `GET /api/audit/alerts` - Security alerts
 - `GET /api/audit/failed-logins` - Failed login attempts
 
-## 🧪 Testing
+## Testing
 
 ### Test Default Login
 ```bash
