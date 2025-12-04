@@ -2,11 +2,10 @@
 
 A modern, secure Role-Based Access Control (RBAC) system for hospital management with React frontend, Flask backend, and PostgreSQL database.
 
-<img width="2876" height="1568" alt="image" src="https://github.com/user-attachments/assets/6f9caf67-f457-47bf-ab8c-5db3639568eb" />
-<img width="2879" height="1578" alt="image" src="https://github.com/user-attachments/assets/06c6d2bc-97f0-4583-9a21-6b7fc2dc8de1" />
-<img width="2877" height="1570" alt="image" src="https://github.com/user-attachments/assets/6527be21-90eb-4b26-b819-3db9376fbf6a" />
-<img width="2875" height="1570" alt="image" src="https://github.com/user-attachments/assets/787cd7f8-503b-4487-8664-177b65fb7388" />
-<img width="2879" height="1568" alt="image" src="https://github.com/user-attachments/assets/8df33577-4a19-4b00-8b3a-9b438adc551a" />
+<img width="2877" height="1582" alt="image" src="https://github.com/user-attachments/assets/06dd057b-6d4a-4f02-90c5-714213e22cee" />
+<img width="2862" height="1560" alt="image" src="https://github.com/user-attachments/assets/edc2a662-224f-41b1-97db-42038f3ea06a" />
+<img width="2876" height="1576" alt="image" src="https://github.com/user-attachments/assets/3517c396-c2d9-4c92-a740-6aeb3a015cfa" />
+<img width="2878" height="1574" alt="image" src="https://github.com/user-attachments/assets/2ac9005a-b957-4b64-8d92-b0d52ceff5eb" />
 
 ## Features
 
