@@ -4,11 +4,11 @@ A modern, secure Role-Based Access Control (RBAC) system for hospital management
 
 <img width="2876" height="1568" alt="image" src="https://github.com/user-attachments/assets/6f9caf67-f457-47bf-ab8c-5db3639568eb" />
 <img width="2879" height="1578" alt="image" src="https://github.com/user-attachments/assets/06c6d2bc-97f0-4583-9a21-6b7fc2dc8de1" />
-<img width="2877" height="1576" alt="image" src="https://github.com/user-attachments/assets/8d961222-a48b-4e59-b1b9-623f8f02abcd" />
+<img width="2877" height="1570" alt="image" src="https://github.com/user-attachments/assets/6527be21-90eb-4b26-b819-3db9376fbf6a" />
 <img width="2875" height="1570" alt="image" src="https://github.com/user-attachments/assets/787cd7f8-503b-4487-8664-177b65fb7388" />
 <img width="2879" height="1568" alt="image" src="https://github.com/user-attachments/assets/8df33577-4a19-4b00-8b3a-9b438adc551a" />
 
-## ✨ Features
+## Features
 
 ### Core Functionality
 - **Modern UI**: React-based interface with Apple-inspired design system
@@ -20,13 +20,13 @@ A modern, secure Role-Based Access Control (RBAC) system for hospital management
 - **Security Alerts**: Real-time monitoring of unauthorized access attempts
 
 ### Hospital Management Modules
-- **👥 Patient Management**: Register and manage patient records with full CRUD operations
-- **📅 Appointment Scheduling**: Schedule, update, and track patient appointments
-- **📋 Medical Records**: Manage patient diagnoses, treatments, prescriptions, and notes
-- **🔐 Authentication & Authorization**: JWT-based secure login with role-based access
-- **📊 Dashboard Analytics**: Real-time statistics and activity monitoring
+- ** Patient Management**: Register and manage patient records with full CRUD operations
+- ** Appointment Scheduling**: Schedule, update, and track patient appointments
+- ** Medical Records**: Manage patient diagnoses, treatments, prescriptions, and notes
+- ** Authentication & Authorization**: JWT-based secure login with role-based access
+- ** Dashboard Analytics**: Real-time statistics and activity monitoring
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **React 19.1.1** - UI framework
@@ -50,7 +50,7 @@ A modern, secure Role-Based Access Control (RBAC) system for hospital management
 - **Audit Logging**: Comprehensive activity tracking with failed login detection
 - **Role-based Permissions**: Granular access control per table and operation
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 hospital_rbac/
@@ -128,7 +128,7 @@ pip install -r requirements.txt
 
 # Configure environment variables
 cp .env.example .env
-# ⚠️ Edit .env and update:
+# Edit .env and update:
 #    - DB_PASSWORD (your PostgreSQL password)
 #    - SECRET_KEY (generate a secure random key)
 ```
@@ -169,7 +169,7 @@ npm run dev
 
 **Open browser:** Navigate to [http://localhost:5173](http://localhost:5173)
 
-## 🔑 Default Login Credentials
+## Default Login Credentials
 
 Use these credentials to test different role permissions:
 
@@ -180,9 +180,9 @@ Use these credentials to test different role permissions:
 | **Nurse** | `nurse1` | `password` | Patients (view), Appointments (view), Medical Records (view) |
 | **Receptionist** | `receptionist1` | `password` | Patients (full CRUD), Appointments (full CRUD) |
 
-**⚠️ Security Warning**: Change these default passwords immediately in production!
+**Security Warning**: Change these default passwords immediately in production!
 
-## 📊 Role Permission Matrix
+## Role Permission Matrix
 
 | Module | Admin | Doctor | Nurse | Receptionist | Billing |
 |--------|-------|--------|-------|--------------|---------|
@@ -314,32 +314,32 @@ curl http://localhost:5000/api/appointments \
 
 ### Manual Testing Checklist
 
-✅ **Authentication**
+**Authentication**
 - [ ] Login with valid credentials
 - [ ] Login with invalid credentials (check audit log)
 - [ ] Logout functionality
 - [ ] Token expiration after 24 hours
 
-✅ **Role-Based Access**
+**Role-Based Access**
 - [ ] Admin can access all modules
 - [ ] Doctor can create/edit medical records
 - [ ] Nurse can only view medical records
 - [ ] Receptionist can manage patients and appointments
 
-✅ **CRUD Operations**
+**CRUD Operations**
 - [ ] Create new patient (as Admin or Receptionist)
 - [ ] Update patient information
 - [ ] Create appointment for existing patient
 - [ ] Create medical record (as Admin or Doctor)
 - [ ] Verify audit logs for all operations
 
-✅ **Audit Logging**
+**Audit Logging**
 - [ ] Successful login creates audit entry
 - [ ] Failed login creates audit entry with status='failed'
 - [ ] CRUD operations logged with correct event_type
 - [ ] Filter audit logs by event type, user, status
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend won't start
 ```bash
@@ -422,7 +422,7 @@ If you still see this error:
 - Check frontend is sending `patient_id` and `doctor_id` as strings (from select elements)
 - Verify backend is running latest code with integer conversion
 
-## 📚 Documentation
+## Documentation
 
 - **Database Schema**: See `database/sql/create_schema.sql`
   - Users, Roles, Permissions tables
@@ -441,7 +441,7 @@ If you still see this error:
   
 - **API Documentation**: See individual route files in `server/app/routes/`
 
-## 🏗️ Database Schema
+## Database Schema
 
 ### Core Tables
 - **users**: User accounts with hashed passwords (bcrypt)
@@ -461,7 +461,7 @@ If you still see this error:
   - status: 'success' or 'failed'
   - username, table_name, details, event_time
 
-## 🔒 Security Features
+## Security Features
 
 1. **Password Security**
    - bcrypt hashing with cost factor 12
@@ -488,7 +488,7 @@ If you still see this error:
    - Required field validation
    - SQL injection prevention via parameterized queries
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
