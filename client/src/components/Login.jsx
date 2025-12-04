@@ -47,7 +47,7 @@ const Login = () => {
           <div className="login-logo">
             <HospitalLogo size={56} />
           </div>
-          <h1>Hospital RBAC</h1>
+          <h1>Hospital Role-Based</h1>
           <p>Access Control System</p>
         </div>
 
