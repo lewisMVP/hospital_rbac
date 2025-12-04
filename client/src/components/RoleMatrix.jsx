@@ -3,6 +3,7 @@ import { useAPI } from '../hooks/useAPI';
 import { roleAPI } from '../services/api';
 import ErrorMessage from './ErrorMessage';
 import ConfirmModal from './ConfirmModal';
+import { Icons } from './Icons';
 import './RoleMatrix.css';
 
 const RoleMatrix = () => {
@@ -11,15 +12,9 @@ const RoleMatrix = () => {
   const [newRoleDescription, setNewRoleDescription] = useState('');
   const [roleToDelete, setRoleToDelete] = useState(null);
   
-  // Fetch roles from API
   const { data: roles, loading, error, refetch } = useAPI(roleAPI.getAll);
 
-  // Debug log
-  console.log('RoleMatrix - roles:', roles);
-  console.log('RoleMatrix - loading:', loading);
-  console.log('RoleMatrix - error:', error);
-
-  // Static permissions for each role (based on your role_permission.sql)
+  // Static permissions for each role (based on role_permission.sql)
   const rolePermissions = {
     'Admin': [
       { table: 'Patients', permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'] },
@@ -49,12 +44,23 @@ const RoleMatrix = () => {
 
   const getPermissionIcon = (permission) => {
     const icons = {
-      'SELECT': '👁️',
-      'INSERT': '➕',
-      'UPDATE': '✏️',
-      'DELETE': '🗑️'
+      'SELECT': Icons.eye,
+      'INSERT': Icons.plus,
+      'UPDATE': Icons.edit,
+      'DELETE': Icons.trash
     };
-    return icons[permission] || '🔧';
+    return icons[permission] || Icons.key;
+  };
+
+  const getRoleIcon = (roleName) => {
+    const icons = {
+      'Admin': Icons.shieldCheck,
+      'Doctor': Icons.stethoscope,
+      'Nurse': Icons.heartPulse,
+      'Receptionist': Icons.calendar,
+      'Billing': Icons.fileText
+    };
+    return icons[roleName] || Icons.key;
   };
 
   const handleCreateRole = async () => {
@@ -71,8 +77,7 @@ const RoleMatrix = () => {
       setShowCreateModal(false);
       setNewRoleName('');
       setNewRoleDescription('');
-      refetch(); // Refresh roles list
-      alert('Role created successfully!');
+      refetch();
     } catch (error) {
       console.error('Error creating role:', error);
       alert(error.message || 'Failed to create role');
@@ -87,8 +92,7 @@ const RoleMatrix = () => {
     try {
       await roleAPI.delete(roleToDelete.role_id);
       setRoleToDelete(null);
-      refetch(); // Refresh roles list
-      alert('Role deleted successfully!');
+      refetch();
     } catch (error) {
       console.error('Error deleting role:', error);
       alert(error.message || 'Failed to delete role');
@@ -97,8 +101,11 @@ const RoleMatrix = () => {
 
   if (loading) {
     return (
-      <div className="roles-matrix-container">
-        <div className="loading">Loading roles and permissions matrix...</div>
+      <div className="role-matrix">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading roles and permissions...</p>
+        </div>
       </div>
     );
   }
@@ -109,17 +116,18 @@ const RoleMatrix = () => {
       {/* Header */}
       <div className="matrix-header">
         <div>
-          <h2>Roles & Permissions Matrix</h2>
-          <p className="matrix-subtitle">Access control overview for all roles</p>
+          <h1>Roles & Permissions</h1>
+          <p className="subtitle">Access control overview for all roles</p>
         </div>
-        <button className="btn-create-role" onClick={() => setShowCreateModal(true)}>
-          ➕ Create New Role
+        <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+          {Icons.plus}
+          <span>Create Role</span>
         </button>
       </div>
 
       {/* Info Banner */}
       <div className="info-banner">
-        <div className="info-icon">ℹ️</div>
+        <div className="info-icon">{Icons.info}</div>
         <div className="info-content">
           <strong>Note:</strong> Permissions are managed at the PostgreSQL database level using GRANT statements.
           To modify permissions, please update the database roles directly.
@@ -134,17 +142,19 @@ const RoleMatrix = () => {
             return (
               <div key={role.role_id} className="role-permission-card">
                 <div className="role-card-header">
-                  <div className="role-icon">{role.icon || '🔑'}</div>
+                  <div className="role-icon-wrapper">
+                    {getRoleIcon(role.role_name)}
+                  </div>
                   <div className="role-header-info">
                     <h3 className="role-title">{role.role_name}</h3>
                     <p className="role-user-count">{role.user_count || 0} users</p>
                   </div>
                   <button 
-                    className="btn-delete-role-icon" 
+                    className="btn-delete-role" 
                     onClick={() => handleDeleteRole(role)}
                     title="Delete role"
                   >
-                    🗑️
+                    {Icons.trash}
                   </button>
                 </div>
 
@@ -153,12 +163,14 @@ const RoleMatrix = () => {
                     permissions.map((perm, index) => (
                       <div key={index} className="permission-group">
                         <div className="permission-table-name">
-                          📁 {perm.table}
+                          {Icons.folder}
+                          <span>{perm.table}</span>
                         </div>
                         <div className="permission-actions">
                           {perm.permissions.map((action, i) => (
                             <span key={i} className="permission-badge granted">
-                              {getPermissionIcon(action)} {action}
+                              {getPermissionIcon(action)}
+                              <span>{action}</span>
                             </span>
                           ))}
                         </div>
@@ -175,17 +187,21 @@ const RoleMatrix = () => {
           })
         ) : (
           <div className="no-roles">
+            <div className="no-results-icon">{Icons.shield}</div>
             <p>No roles found</p>
           </div>
         )}
       </div>
+
       {/* Create Role Modal */}
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Create New Role</h3>
-              <button className="btn-close" onClick={() => setShowCreateModal(false)}>×</button>
+              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
+                {Icons.close}
+              </button>
             </div>
             <div className="modal-body">
               <div className="form-group">
@@ -209,10 +225,10 @@ const RoleMatrix = () => {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setShowCreateModal(false)}>
+              <button className="btn-secondary" onClick={() => setShowCreateModal(false)}>
                 Cancel
               </button>
-              <button className="btn-save" onClick={handleCreateRole}>
+              <button className="btn-primary" onClick={handleCreateRole}>
                 Create Role
               </button>
             </div>

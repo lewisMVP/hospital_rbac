@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import { Icons, UserAvatar } from './Icons';
 import './Patients.css';
 import './Modal.css';
 
@@ -10,7 +11,7 @@ export default function Patients() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
+  const [modalMode, setModalMode] = useState('create');
   const [currentPatient, setCurrentPatient] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState(null);
@@ -25,7 +26,6 @@ export default function Patients() {
     address: ''
   });
 
-  // Check permissions based on role
   const canCreate = user?.role_name === 'Admin' || user?.role_name === 'Receptionist';
   const canEdit = user?.role_name === 'Admin';
   const canDelete = user?.role_name === 'Admin';
@@ -128,7 +128,10 @@ export default function Patients() {
   if (loading) {
     return (
       <div className="patients-container">
-        <div className="loading">Loading patients...</div>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading patients...</p>
+        </div>
       </div>
     );
   }
@@ -141,40 +144,38 @@ export default function Patients() {
           <p className="subtitle">Manage patient records and information</p>
         </div>
         {canCreate && (
-          <button 
-            className="btn-primary"
-            onClick={() => handleOpenModal('create')}
-          >
-            <span className="icon">+</span>
-            Add Patient
+          <button className="btn-primary" onClick={() => handleOpenModal('create')}>
+            {Icons.plus}
+            <span>Add Patient</span>
           </button>
         )}
       </div>
 
       {error && (
         <div className="error-message">
-          {error}
-          <button onClick={() => setError('')}>×</button>
+          <span className="error-icon">{Icons.alertCircle}</span>
+          <span>{error}</span>
+          <button onClick={() => setError('')}>{Icons.close}</button>
         </div>
       )}
 
       <div className="patients-stats">
         <div className="stat-card">
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon-wrapper">{Icons.users}</div>
           <div className="stat-content">
             <div className="stat-label">Total Patients</div>
             <div className="stat-value">{patients.length}</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">🔒</div>
+          <div className="stat-icon-wrapper">{Icons.shield}</div>
           <div className="stat-content">
             <div className="stat-label">Your Access Level</div>
             <div className="stat-value">{user?.role_name}</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">✅</div>
+          <div className="stat-icon-wrapper">{Icons.checkCircle}</div>
           <div className="stat-content">
             <div className="stat-label">Permissions</div>
             <div className="stat-value">
@@ -210,8 +211,11 @@ export default function Patients() {
               patients.map((patient) => (
                 <tr key={patient.patient_id}>
                   <td>{patient.patient_id}</td>
-                  <td className="patient-name">
-                    {patient.first_name} {patient.last_name}
+                  <td>
+                    <div className="patient-name-cell">
+                      <UserAvatar name={patient.first_name} role="Patient" size={32} />
+                      <span className="patient-name">{patient.first_name} {patient.last_name}</span>
+                    </div>
                   </td>
                   <td>{formatDate(patient.date_of_birth)}</td>
                   <td>{patient.gender}</td>
@@ -222,23 +226,23 @@ export default function Patients() {
                     <div className="action-buttons">
                       {canEdit && (
                         <button
-                          className="btn-edit"
+                          className="btn-action btn-edit"
                           onClick={() => handleOpenModal('edit', patient)}
                           title="Edit patient"
                         >
-                          ✏️
+                          {Icons.edit}
                         </button>
                       )}
                       {canDelete && (
                         <button
-                          className="btn-delete"
+                          className="btn-action btn-delete"
                           onClick={() => {
                             setPatientToDelete(patient);
                             setShowDeleteConfirm(true);
                           }}
                           title="Delete patient"
                         >
-                          🗑️
+                          {Icons.trash}
                         </button>
                       )}
                       {!canEdit && !canDelete && (
@@ -259,80 +263,82 @@ export default function Patients() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{modalMode === 'create' ? 'Add New Patient' : 'Edit Patient'}</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>{Icons.close}</button>
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>First Name *</label>
-                  <input
-                    type="text"
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Last Name *</label>
-                  <input
-                    type="text"
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Date of Birth *</label>
-                  <input
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Gender *</label>
-                  <select
-                    value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                    required
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label>Phone</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
-                </div>
-                
-                <div className="form-group full-width">
-                  <label>Address</label>
-                  <textarea
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    rows="3"
-                  />
+              <div className="modal-body">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>First Name *</label>
+                    <input
+                      type="text"
+                      value={formData.first_name}
+                      onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Last Name *</label>
+                    <input
+                      type="text"
+                      value={formData.last_name}
+                      onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Date of Birth *</label>
+                    <input
+                      type="date"
+                      value={formData.date_of_birth}
+                      onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Gender *</label>
+                    <select
+                      value={formData.gender}
+                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Phone</label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="form-group full-width">
+                    <label>Address</label>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      rows="3"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -355,7 +361,7 @@ export default function Patients() {
           <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Confirm Delete</h2>
-              <button className="modal-close" onClick={() => setShowDeleteConfirm(false)}>×</button>
+              <button className="modal-close" onClick={() => setShowDeleteConfirm(false)}>{Icons.close}</button>
             </div>
             
             <div className="modal-body">
@@ -367,16 +373,10 @@ export default function Patients() {
             </div>
 
             <div className="modal-footer">
-              <button 
-                className="btn-secondary" 
-                onClick={() => setShowDeleteConfirm(false)}
-              >
+              <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </button>
-              <button 
-                className="btn-danger" 
-                onClick={handleDelete}
-              >
+              <button className="btn-danger" onClick={handleDelete}>
                 Delete Patient
               </button>
             </div>

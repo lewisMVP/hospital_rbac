@@ -1,4 +1,4 @@
-/* Apple-inspired Design System */
+/* Vision Lab Design System - App Layout */
 * {
   margin: 0;
   padding: 0;
@@ -8,9 +8,9 @@
 .app {
   display: flex;
   min-height: 100vh;
-  background: #f5f5f7;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  color: #1d1d1f;
+  background: var(--bg-gradient);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: var(--text-primary);
   overflow-x: hidden;
 }
 
@@ -21,13 +21,13 @@
   flex-direction: column;
   min-height: 100vh;
   max-width: calc(100vw - 280px);
-  transition: margin-left 0.3s;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .content-area {
   flex: 1;
   overflow-y: auto;
-  background: #f5f5f7;
+  background: var(--bg-gradient);
   width: 100%;
 }
 
@@ -43,22 +43,54 @@
   }
 }
 
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* Scrollbar for content area */
 .content-area::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 .content-area::-webkit-scrollbar-track {
-  background: #f5f5f7;
+  background: transparent;
 }
 
 .content-area::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
 .content-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Page Transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 /* Responsive Design */
@@ -75,4 +107,57 @@
     margin-left: 0;
     max-width: 100vw;
   }
+}
+
+/* Dark Mode Support (prepared for future use) */
+body.dark-mode {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-gradient: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --gray-50: #1a1a1a;
+  --gray-100: #262626;
+  --gray-200: #333333;
+  --gray-300: #404040;
+}
+
+body.dark-mode .sidebar {
+  background: rgba(26, 26, 26, 0.95);
+}
+
+body.dark-mode .header {
+  background: rgba(26, 26, 26, 0.8);
+}
+
+body.dark-mode .stat-card,
+body.dark-mode .dashboard-card,
+body.dark-mode .action-card {
+  background: var(--bg-secondary);
+}
+
+body.dark-mode .login-card {
+  background: rgba(26, 26, 26, 0.9);
+}
+
+body.dark-mode .dropdown-menu,
+body.dark-mode .logout-modal-content {
+  background: var(--bg-secondary);
+}
+
+body.dark-mode .input-wrapper input {
+  background: var(--gray-100);
+  border-color: var(--gray-300);
+  color: var(--text-primary);
+}
+
+body.dark-mode .activity-item {
+  background: var(--gray-100);
+}
+
+body.dark-mode .activity-item:hover {
+  background: var(--gray-200);
 }

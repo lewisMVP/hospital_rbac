@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Icons, HospitalLogo } from './Icons';
 import './Login.css';
 
 const Login = () => {
@@ -33,15 +34,19 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      {/* Background Elements */}
       <div className="login-background">
-        <div className="login-blob blob-1"></div>
-        <div className="login-blob blob-2"></div>
-        <div className="login-blob blob-3"></div>
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
+        <div className="grid-pattern"></div>
       </div>
 
       <div className="login-card">
         <div className="login-header">
-          <div className="login-icon">🏥</div>
+          <div className="login-logo">
+            <HospitalLogo size={56} />
+          </div>
           <h1>Hospital RBAC</h1>
           <p>Access Control System</p>
         </div>
@@ -49,21 +54,20 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="login-form">
           {error && (
             <div className="login-error">
-              <span className="error-icon">⚠️</span>
+              <span className="error-icon">{Icons.alertCircle}</span>
               <span>{error}</span>
             </div>
           )}
 
           <div className="form-group">
             <label htmlFor="username">Username</label>
-            <div className="input-wrapper">
-              <span className="input-icon">👤</span>
+            <div className={`input-wrapper ${username ? 'has-value' : ''}`}>
+              <span className="input-icon">{Icons.user}</span>
               <input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
                 required
                 autoFocus
               />
@@ -72,14 +76,13 @@ const Login = () => {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <div className="input-wrapper">
-              <span className="input-icon">🔒</span>
+            <div className={`input-wrapper ${password ? 'has-value' : ''}`}>
+              <span className="input-icon">{Icons.lock}</span>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
                 required
               />
             </div>
@@ -98,11 +101,18 @@ const Login = () => {
             ) : (
               <>
                 <span>Sign In</span>
-                <span className="arrow">→</span>
+                <span className="arrow">{Icons.arrowRight}</span>
               </>
             )}
           </button>
         </form>
+
+        <div className="login-footer">
+          <p className="security-note">
+            {Icons.shield}
+            Secure authentication powered by PostgreSQL RBAC
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import './Dashboard.css'
 import { dashboardAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import ErrorMessage from './ErrorMessage'
+import { Icons, UserAvatar } from './Icons'
 
 const Dashboard = ({ setActiveView }) => {
   const { user } = useAuth()
@@ -22,14 +23,21 @@ const Dashboard = ({ setActiveView }) => {
       if (!statsResponse.success) {
         throw new Error(statsResponse.error || 'Failed to load stats')
       }
-      const statsData = statsResponse.data // Already unwrapped in api.js
+      const statsData = statsResponse.data
+      
+      const iconMap = {
+        'Total Users': Icons.users,
+        'Active Sessions': Icons.activity,
+        'Total Roles': Icons.shield,
+        'Audit Logs': Icons.database
+      }
       
       const statsArray = statsData.map(stat => ({
         label: stat.label,
         value: stat.value,
         change: stat.change,
         trend: stat.trend,
-        icon: stat.icon,
+        icon: iconMap[stat.label] || Icons.activity,
         color: stat.color
       }))
       setStats(statsArray)
@@ -37,7 +45,7 @@ const Dashboard = ({ setActiveView }) => {
       // Load recent activities
       const activitiesResponse = await dashboardAPI.getRecentActivities()
       if (activitiesResponse.success) {
-        const activitiesData = activitiesResponse.data || [] // Already unwrapped
+        const activitiesData = activitiesResponse.data || []
         const formattedActivities = activitiesData.map(activity => ({
           user: activity.user || 'Unknown',
           action: activity.details || activity.type || 'No action',
@@ -50,8 +58,8 @@ const Dashboard = ({ setActiveView }) => {
       // Load role distribution
       const roleResponse = await dashboardAPI.getRoleDistribution()
       if (roleResponse.success) {
-        const roleData = roleResponse.data || [] // Already unwrapped
-        const colors = ['#007aff', '#34c759', '#ff9500', '#5856d6', '#ff3b30', '#86868b']
+        const roleData = roleResponse.data || []
+        const colors = ['#4f7cff', '#a855f7', '#ec4899', '#22c55e', '#f97316', '#06b6d4']
         const formattedRoles = roleData.map((role, index) => ({
           role: role.name,
           count: role.value,
@@ -94,11 +102,20 @@ const Dashboard = ({ setActiveView }) => {
     return 'view'
   }
 
+  const getActivityIcon = (type) => {
+    switch (type) {
+      case 'view': return Icons.eye
+      case 'update': return Icons.edit
+      case 'create': return Icons.plus
+      case 'delete': return Icons.trash
+      default: return Icons.eye
+    }
+  }
+
   const handleQuickAction = (action) => {
     switch (action) {
       case 'addUser':
         setActiveView('users')
-        // Scroll to top when switching views
         window.scrollTo({ top: 0, behavior: 'smooth' })
         break
       case 'createRole':
@@ -106,7 +123,6 @@ const Dashboard = ({ setActiveView }) => {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         break
       case 'generateReport':
-        // For now, go to audit log where admin can see all activities
         setActiveView('audit')
         window.scrollTo({ top: 0, behavior: 'smooth' })
         break
@@ -122,7 +138,10 @@ const Dashboard = ({ setActiveView }) => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <div className="loading">Loading dashboard...</div>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -136,13 +155,16 @@ const Dashboard = ({ setActiveView }) => {
       {/* Stats Cards */}
       <div className="stats-grid">
         {stats.map((stat, index) => (
-          <div key={index} className="stat-card" style={{'--card-color': stat.color}}>
-            <div className="stat-icon">{stat.icon}</div>
+          <div key={index} className="stat-card" style={{'--accent-color': stat.color}}>
+            <div className="stat-icon-wrapper">
+              <span className="stat-icon">{stat.icon}</span>
+            </div>
             <div className="stat-content">
-              <h3 className="stat-value">{stat.value}</h3>
               <p className="stat-label">{stat.label}</p>
+              <h3 className="stat-value">{stat.value}</h3>
               <span className={`stat-change ${stat.trend}`}>
-                {stat.trend === 'up' ? '↗' : '↘'} {stat.change}
+                {stat.trend === 'up' ? Icons.trendingUp : Icons.trendingDown}
+                <span>{stat.change}</span>
               </span>
             </div>
           </div>
@@ -154,24 +176,30 @@ const Dashboard = ({ setActiveView }) => {
         <div className="dashboard-card">
           <div className="card-header">
             <h2 className="card-title">Recent Activities</h2>
-            <button className="card-action">View All</button>
+            <button className="card-action" onClick={() => setActiveView('audit')}>
+              View All
+              {Icons.arrowRight}
+            </button>
           </div>
           <div className="activities-list">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="activity-item">
-                <div className={`activity-icon ${activity.type}`}>
-                  {activity.type === 'view' && '👁️'}
-                  {activity.type === 'update' && '✏️'}
-                  {activity.type === 'create' && '➕'}
-                  {activity.type === 'delete' && '🗑️'}
-                </div>
-                <div className="activity-content">
-                  <p className="activity-user">{activity.user}</p>
-                  <p className="activity-action">{activity.action}</p>
-                </div>
-                <span className="activity-time">{activity.time}</span>
+            {recentActivities.length === 0 ? (
+              <div className="empty-state">
+                <p>No recent activities</p>
               </div>
-            ))}
+            ) : (
+              recentActivities.map((activity, index) => (
+                <div key={index} className="activity-item">
+                  <div className={`activity-icon ${activity.type}`}>
+                    {getActivityIcon(activity.type)}
+                  </div>
+                  <div className="activity-content">
+                    <p className="activity-user">{activity.user}</p>
+                    <p className="activity-action">{activity.action}</p>
+                  </div>
+                  <span className="activity-time">{activity.time}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -179,33 +207,42 @@ const Dashboard = ({ setActiveView }) => {
         <div className="dashboard-card">
           <div className="card-header">
             <h2 className="card-title">Role Distribution</h2>
-            <button className="card-action">Details</button>
+            <button className="card-action" onClick={() => setActiveView('roles')}>
+              Details
+              {Icons.arrowRight}
+            </button>
           </div>
           <div className="role-chart">
-            {roleDistribution.map((role, index) => (
-              <div key={index} className="role-item">
-                <div className="role-info">
-                  <div className="role-name-wrapper">
-                    <div 
-                      className="role-color-dot" 
-                      style={{backgroundColor: role.color}}
-                    ></div>
-                    <span className="role-name">{role.role}</span>
-                  </div>
-                  <span className="role-count">{role.count} users</span>
-                </div>
-                <div className="role-bar-container">
-                  <div 
-                    className="role-bar" 
-                    style={{
-                      width: `${role.percentage}%`,
-                      backgroundColor: role.color
-                    }}
-                  ></div>
-                </div>
-                <span className="role-percentage">{role.percentage}%</span>
+            {roleDistribution.length === 0 ? (
+              <div className="empty-state">
+                <p>No role data available</p>
               </div>
-            ))}
+            ) : (
+              roleDistribution.map((role, index) => (
+                <div key={index} className="role-item">
+                  <div className="role-info">
+                    <div className="role-name-wrapper">
+                      <div 
+                        className="role-color-dot" 
+                        style={{backgroundColor: role.color}}
+                      ></div>
+                      <span className="role-name">{role.role}</span>
+                    </div>
+                    <span className="role-count">{role.count} users</span>
+                  </div>
+                  <div className="role-bar-container">
+                    <div 
+                      className="role-bar" 
+                      style={{
+                        width: `${role.percentage}%`,
+                        background: `linear-gradient(90deg, ${role.color} 0%, ${role.color}80 100%)`
+                      }}
+                    ></div>
+                  </div>
+                  <span className="role-percentage">{role.percentage}%</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -216,19 +253,19 @@ const Dashboard = ({ setActiveView }) => {
           <h2 className="section-title">Quick Actions</h2>
           <div className="actions-grid">
             <button className="action-card" onClick={() => handleQuickAction('addUser')}>
-              <span className="action-icon">👤</span>
+              <span className="action-icon">{Icons.userPlus}</span>
               <span className="action-label">Add User</span>
             </button>
             <button className="action-card" onClick={() => handleQuickAction('createRole')}>
-              <span className="action-icon">🔑</span>
+              <span className="action-icon">{Icons.key}</span>
               <span className="action-label">Create Role</span>
             </button>
             <button className="action-card" onClick={() => handleQuickAction('generateReport')}>
-              <span className="action-icon">📊</span>
+              <span className="action-icon">{Icons.barChart}</span>
               <span className="action-label">Generate Report</span>
             </button>
             <button className="action-card" onClick={() => handleQuickAction('auditSearch')}>
-              <span className="action-icon">🔍</span>
+              <span className="action-icon">{Icons.search}</span>
               <span className="action-label">Audit Search</span>
             </button>
           </div>

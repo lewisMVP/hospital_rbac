@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import { Icons, UserAvatar } from './Icons';
 import './MedicalRecords.css';
 import './Modal.css';
 
@@ -27,7 +28,6 @@ export default function MedicalRecords() {
     record_date: new Date().toISOString().split('T')[0]
   });
 
-  // Check permissions based on role (from matrix)
   const canCreate = user?.role_name === 'Admin' || user?.role_name === 'Doctor';
   const canEdit = user?.role_name === 'Admin' || user?.role_name === 'Doctor';
   const canDelete = user?.role_name === 'Admin';
@@ -65,7 +65,6 @@ export default function MedicalRecords() {
 
   const fetchDoctors = async () => {
     try {
-      // Use dedicated /doctors endpoint instead of /users/ to avoid permission issues
       const response = await api.get('/users/doctors');
       if (response.data.success) {
         const doctors = response.data.data || [];
@@ -156,7 +155,10 @@ export default function MedicalRecords() {
   if (loading) {
     return (
       <div className="medical-records-container">
-        <div className="loading">Loading medical records...</div>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading medical records...</p>
+        </div>
       </div>
     );
   }
@@ -169,40 +171,38 @@ export default function MedicalRecords() {
           <p className="subtitle">Patient medical history and diagnoses</p>
         </div>
         {canCreate && (
-          <button 
-            className="btn-primary"
-            onClick={() => handleOpenModal('create')}
-          >
-            <span className="icon">+</span>
-            Add Medical Record
+          <button className="btn-primary" onClick={() => handleOpenModal('create')}>
+            {Icons.plus}
+            <span>Add Medical Record</span>
           </button>
         )}
       </div>
 
       {error && (
         <div className="error-message">
-          {error}
-          <button onClick={() => setError('')}>×</button>
+          <span className="error-icon">{Icons.alertCircle}</span>
+          <span>{error}</span>
+          <button onClick={() => setError('')}>{Icons.close}</button>
         </div>
       )}
 
       <div className="medical-records-stats">
         <div className="stat-card">
-          <div className="stat-icon">📋</div>
+          <div className="stat-icon-wrapper">{Icons.clipboard}</div>
           <div className="stat-content">
             <div className="stat-label">Total Records</div>
             <div className="stat-value">{records.length}</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">🔒</div>
+          <div className="stat-icon-wrapper">{Icons.shield}</div>
           <div className="stat-content">
             <div className="stat-label">Your Access Level</div>
             <div className="stat-value">{user?.role_name}</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">✅</div>
+          <div className="stat-icon-wrapper">{Icons.checkCircle}</div>
           <div className="stat-content">
             <div className="stat-label">Permissions</div>
             <div className="stat-value">
@@ -237,32 +237,37 @@ export default function MedicalRecords() {
               records.map((record) => (
                 <tr key={record.record_id}>
                   <td>{record.record_id}</td>
-                  <td className="patient-name">{record.patient_name}</td>
+                  <td>
+                    <div className="patient-name-cell">
+                      <UserAvatar name={record.patient_name} role="Patient" size={32} />
+                      <span className="patient-name">{record.patient_name}</span>
+                    </div>
+                  </td>
                   <td>{record.doctor_name || '-'}</td>
-                  <td>{record.diagnosis}</td>
-                  <td>{record.treatment || '-'}</td>
+                  <td className="diagnosis-cell">{record.diagnosis}</td>
+                  <td className="treatment-cell">{record.treatment || '-'}</td>
                   <td>{formatDate(record.record_date)}</td>
                   <td>
                     <div className="action-buttons">
                       {canEdit && (
                         <button
-                          className="btn-edit"
+                          className="btn-action btn-edit"
                           onClick={() => handleOpenModal('edit', record)}
                           title="Edit record"
                         >
-                          ✏️
+                          {Icons.edit}
                         </button>
                       )}
                       {canDelete && (
                         <button
-                          className="btn-delete"
+                          className="btn-action btn-delete"
                           onClick={() => {
                             setRecordToDelete(record);
                             setShowDeleteConfirm(true);
                           }}
                           title="Delete record"
                         >
-                          🗑️
+                          {Icons.trash}
                         </button>
                       )}
                       {!canEdit && !canDelete && (
@@ -283,88 +288,90 @@ export default function MedicalRecords() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{modalMode === 'create' ? 'Add New Medical Record' : 'Edit Medical Record'}</h2>
-              <button className="modal-close" onClick={handleCloseModal}>×</button>
+              <button className="modal-close" onClick={handleCloseModal}>{Icons.close}</button>
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Patient *</label>
-                  <select
-                    value={formData.patient_id}
-                    onChange={(e) => setFormData({...formData, patient_id: e.target.value})}
-                    required
-                  >
-                    <option value="">Select Patient</option>
-                    {patients.map(p => (
-                      <option key={p.patient_id} value={p.patient_id}>
-                        {p.first_name} {p.last_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label>Doctor</label>
-                  <select
-                    value={formData.doctor_id}
-                    onChange={(e) => setFormData({...formData, doctor_id: e.target.value})}
-                    disabled={user?.role_name === 'Doctor'}
-                  >
-                    <option value="">Select Doctor</option>
-                    {doctors.map(d => (
-                      <option key={d.user_id} value={d.user_id}>
-                        {d.username}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label>Record Date *</label>
-                  <input
-                    type="date"
-                    value={formData.record_date}
-                    onChange={(e) => setFormData({...formData, record_date: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group full-width">
-                  <label>Diagnosis *</label>
-                  <textarea
-                    value={formData.diagnosis}
-                    onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
-                    rows="3"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group full-width">
-                  <label>Treatment</label>
-                  <textarea
-                    value={formData.treatment}
-                    onChange={(e) => setFormData({...formData, treatment: e.target.value})}
-                    rows="3"
-                  />
-                </div>
-                
-                <div className="form-group full-width">
-                  <label>Prescription</label>
-                  <textarea
-                    value={formData.prescription}
-                    onChange={(e) => setFormData({...formData, prescription: e.target.value})}
-                    rows="2"
-                  />
-                </div>
-                
-                <div className="form-group full-width">
-                  <label>Notes</label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    rows="2"
-                  />
+              <div className="modal-body">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Patient *</label>
+                    <select
+                      value={formData.patient_id}
+                      onChange={(e) => setFormData({...formData, patient_id: e.target.value})}
+                      required
+                    >
+                      <option value="">Select Patient</option>
+                      {patients.map(p => (
+                        <option key={p.patient_id} value={p.patient_id}>
+                          {p.first_name} {p.last_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Doctor</label>
+                    <select
+                      value={formData.doctor_id}
+                      onChange={(e) => setFormData({...formData, doctor_id: e.target.value})}
+                      disabled={user?.role_name === 'Doctor'}
+                    >
+                      <option value="">Select Doctor</option>
+                      {doctors.map(d => (
+                        <option key={d.user_id} value={d.user_id}>
+                          {d.username}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Record Date *</label>
+                    <input
+                      type="date"
+                      value={formData.record_date}
+                      onChange={(e) => setFormData({...formData, record_date: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group full-width">
+                    <label>Diagnosis *</label>
+                    <textarea
+                      value={formData.diagnosis}
+                      onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
+                      rows="3"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group full-width">
+                    <label>Treatment</label>
+                    <textarea
+                      value={formData.treatment}
+                      onChange={(e) => setFormData({...formData, treatment: e.target.value})}
+                      rows="3"
+                    />
+                  </div>
+                  
+                  <div className="form-group full-width">
+                    <label>Prescription</label>
+                    <textarea
+                      value={formData.prescription}
+                      onChange={(e) => setFormData({...formData, prescription: e.target.value})}
+                      rows="2"
+                    />
+                  </div>
+                  
+                  <div className="form-group full-width">
+                    <label>Notes</label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      rows="2"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -387,29 +394,23 @@ export default function MedicalRecords() {
           <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Confirm Delete</h2>
-              <button className="modal-close" onClick={() => setShowDeleteConfirm(false)}>×</button>
+              <button className="modal-close" onClick={() => setShowDeleteConfirm(false)}>{Icons.close}</button>
             </div>
             
             <div className="modal-body">
               <p>Are you sure you want to delete this medical record?</p>
-              <p className="record-info">
+              <div className="record-info">
                 <strong>Patient: {recordToDelete?.patient_name}</strong><br/>
                 Diagnosis: {recordToDelete?.diagnosis}
-              </p>
+              </div>
               <p className="warning-text">This action cannot be undone.</p>
             </div>
 
             <div className="modal-footer">
-              <button 
-                className="btn-secondary" 
-                onClick={() => setShowDeleteConfirm(false)}
-              >
+              <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </button>
-              <button 
-                className="btn-danger" 
-                onClick={handleDelete}
-              >
+              <button className="btn-danger" onClick={handleDelete}>
                 Delete Record
               </button>
             </div>

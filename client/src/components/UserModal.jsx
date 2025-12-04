@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Icons } from './Icons';
 import './UserModal.css';
 
 const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
@@ -12,14 +13,12 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
 
   useEffect(() => {
     if (user) {
-      // Edit mode
       setFormData({
         username: user.username || '',
-        password: '', // Don't show existing password
+        password: '',
         role_id: user.role_id || '',
       });
     } else {
-      // Create mode
       setFormData({
         username: '',
         password: '',
@@ -39,7 +38,6 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
     }
 
     if (!user && !formData.password) {
-      // Password required for new users
       newErrors.password = 'Password is required';
     } else if (formData.password && formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
@@ -65,7 +63,6 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
         role_id: parseInt(formData.role_id),
       };
 
-      // Only include password if it's provided
       if (formData.password) {
         dataToSave.password = formData.password;
       }
@@ -82,7 +79,6 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -94,77 +90,79 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{user ? '✏️ Edit User' : '➕ Create New User'}</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <h2>{user ? 'Edit User' : 'Create New User'}</h2>
+          <button className="modal-close" onClick={onClose}>{Icons.close}</button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
           {errors.submit && (
             <div className="form-error-banner">
-              <span className="error-icon">⚠️</span>
+              <span className="error-icon">{Icons.alertCircle}</span>
               <span>{errors.submit}</span>
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="username">
-              Username <span className="required">*</span>
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              value={formData.username}
-              onChange={handleChange}
-              className={errors.username ? 'error' : ''}
-              placeholder="Enter username"
-              autoFocus
-            />
-            {errors.username && <span className="field-error">{errors.username}</span>}
+          <div className="modal-body">
+            <div className="form-group">
+              <label htmlFor="username">
+                Username <span className="required">*</span>
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={formData.username}
+                onChange={handleChange}
+                className={errors.username ? 'error' : ''}
+                placeholder="Enter username"
+                autoFocus
+              />
+              {errors.username && <span className="field-error">{errors.username}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">
+                Password {!user && <span className="required">*</span>}
+                {user && <span className="optional">(leave blank to keep current)</span>}
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={errors.password ? 'error' : ''}
+                placeholder={user ? 'Enter new password' : 'Enter password'}
+              />
+              {errors.password && <span className="field-error">{errors.password}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="role_id">
+                Role <span className="required">*</span>
+              </label>
+              <select
+                id="role_id"
+                name="role_id"
+                value={formData.role_id}
+                onChange={handleChange}
+                className={errors.role_id ? 'error' : ''}
+              >
+                <option value="">Select a role</option>
+                {roles?.map(role => (
+                  <option key={role.role_id} value={role.role_id}>
+                    {role.role_name}
+                  </option>
+                ))}
+              </select>
+              {errors.role_id && <span className="field-error">{errors.role_id}</span>}
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">
-              Password {!user && <span className="required">*</span>}
-              {user && <span className="optional">(leave blank to keep current)</span>}
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? 'error' : ''}
-              placeholder={user ? 'Enter new password' : 'Enter password'}
-            />
-            {errors.password && <span className="field-error">{errors.password}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="role_id">
-              Role <span className="required">*</span>
-            </label>
-            <select
-              id="role_id"
-              name="role_id"
-              value={formData.role_id}
-              onChange={handleChange}
-              className={errors.role_id ? 'error' : ''}
-            >
-              <option value="">Select a role</option>
-              {roles?.map(role => (
-                <option key={role.role_id} value={role.role_id}>
-                  {role.icon || '🔑'} {role.role_name}
-                </option>
-              ))}
-            </select>
-            {errors.role_id && <span className="field-error">{errors.role_id}</span>}
-          </div>
-
-          <div className="modal-actions">
+          <div className="modal-footer">
             <button
               type="button"
-              className="btn-cancel"
+              className="btn-secondary"
               onClick={onClose}
               disabled={loading}
             >
@@ -172,7 +170,7 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
             </button>
             <button
               type="submit"
-              className="btn-save"
+              className="btn-primary"
               disabled={loading}
             >
               {loading ? (
@@ -181,9 +179,7 @@ const UserModal = ({ isOpen, onClose, onSave, user, roles }) => {
                   Saving...
                 </>
               ) : (
-                <>
-                  {user ? '💾 Update' : '✨ Create'}
-                </>
+                user ? 'Update User' : 'Create User'
               )}
             </button>
           </div>

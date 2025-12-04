@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { Icons, HospitalLogo, UserAvatar } from './Icons'
 import './Sidebar.css'
 
 const Sidebar = ({ activeView, setActiveView }) => {
@@ -8,23 +9,19 @@ const Sidebar = ({ activeView, setActiveView }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const allMenuItems = [
-    { id: 'dashboard', icon: '📊', label: 'Dashboard', description: 'Overview', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Billing'] },
-    { id: 'patients', icon: '🏥', label: 'Patients', description: 'Patient Records', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist'] },
-    { id: 'medical-records', icon: '📋', label: 'Medical Records', description: 'Medical History', roles: ['Admin', 'Doctor', 'Nurse'] },
-    { id: 'appointments', icon: '📅', label: 'Appointments', description: 'Scheduling', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist'] },
-    { id: 'users', icon: '👥', label: 'Users', description: 'User Management', roles: ['Admin'] },
-    { id: 'roles', icon: '🔐', label: 'Roles & Permissions', description: 'Access Matrix', roles: ['Admin'] },
-    { id: 'audit', icon: '�', label: 'Audit Logs', description: 'Security Trail', roles: ['Admin'] },
+    { id: 'dashboard', icon: Icons.dashboard, label: 'Dashboard', description: 'Overview', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Billing'] },
+    { id: 'patients', icon: Icons.users, label: 'Patients', description: 'Patient Records', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist'] },
+    { id: 'medical-records', icon: Icons.clipboard, label: 'Medical Records', description: 'Medical History', roles: ['Admin', 'Doctor', 'Nurse'] },
+    { id: 'appointments', icon: Icons.calendar, label: 'Appointments', description: 'Scheduling', roles: ['Admin', 'Doctor', 'Nurse', 'Receptionist'] },
+    { id: 'users', icon: Icons.userPlus, label: 'Users', description: 'User Management', roles: ['Admin'] },
+    { id: 'roles', icon: Icons.shield, label: 'Roles & Permissions', description: 'Access Matrix', roles: ['Admin'] },
+    { id: 'audit', icon: Icons.fileText, label: 'Audit Logs', description: 'Security Trail', roles: ['Admin'] },
   ]
 
   // Filter menu items based on user role
   const menuItems = allMenuItems.filter(item => 
     item.roles.includes(user?.role_name)
   )
-
-  // DEBUG: Log user info
-  console.log('👤 Sidebar user:', user)
-  console.log('📋 Menu items:', menuItems)
 
   const handleLogout = () => {
     setShowLogoutConfirm(true)
@@ -35,17 +32,6 @@ const Sidebar = ({ activeView, setActiveView }) => {
     setShowLogoutConfirm(false)
   }
 
-  const getRoleIcon = (roleName) => {
-    const icons = {
-      'Doctor': '👨‍⚕️',
-      'Nurse': '👩‍⚕️',
-      'Admin': '⚙️',
-      'Receptionist': '👩',
-      'Billing': '💰'
-    }
-    return icons[roleName] || '👤'
-  }
-
   return (
     <>
       {/* Mobile Menu Button */}
@@ -54,11 +40,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label="Toggle menu"
       >
-        <span className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
+        {isMobileMenuOpen ? Icons.close : Icons.menu}
       </button>
 
       {/* Mobile Overlay */}
@@ -72,15 +54,18 @@ const Sidebar = ({ activeView, setActiveView }) => {
       <div className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo">
-            <span className="logo-icon">🏥</span>
+            <div className="logo-icon">
+              <HospitalLogo size={40} />
+            </div>
             <div className="logo-text">
-              <h2>Hospital RBAC</h2>
+              <h2>Hospital Role-Based</h2>
               <p>Access Control System</p>
             </div>
           </div>
         </div>
 
         <nav className="sidebar-nav">
+          <div className="nav-section-label">Menu</div>
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -95,13 +80,14 @@ const Sidebar = ({ activeView, setActiveView }) => {
                 <span className="nav-label">{item.label}</span>
                 <span className="nav-description">{item.description}</span>
               </div>
+              {activeView === item.id && <span className="nav-indicator" />}
             </button>
           ))}
         </nav>
 
         <div className="sidebar-footer">
           <div className="user-profile">
-            <div className="user-avatar">{getRoleIcon(user?.role_name)}</div>
+            <UserAvatar name={user?.username} role={user?.role_name} size={40} />
             <div className="user-info">
               <span className="user-name">{user?.username || 'User'}</span>
               <span className="user-role">{user?.role_name || 'Role'}</span>
@@ -111,7 +97,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
               onClick={handleLogout}
               title="Logout"
             >
-              🚪
+              {Icons.logout}
             </button>
           </div>
         </div>
@@ -120,8 +106,11 @@ const Sidebar = ({ activeView, setActiveView }) => {
       {showLogoutConfirm && (
         <div className="logout-modal">
           <div className="logout-modal-content">
-            <h3>Confirm log out</h3>
-            <p>Are you sure you want to log out?</p>
+            <div className="modal-icon">
+              {Icons.logout}
+            </div>
+            <h3>Sign Out</h3>
+            <p>Are you sure you want to sign out of your account?</p>
             <div className="logout-modal-actions">
               <button 
                 className="btn-cancel" 
@@ -133,7 +122,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
                 className="btn-confirm" 
                 onClick={confirmLogout}
               >
-                Log out
+                Sign Out
               </button>
             </div>
           </div>

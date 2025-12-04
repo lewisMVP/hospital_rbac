@@ -8,7 +8,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(245, 245, 247, 0.95);
+  background: rgba(250, 251, 252, 0.95);
   backdrop-filter: blur(10px);
   z-index: 9999;
   gap: 16px;
@@ -16,7 +16,7 @@
 }
 
 .error-icon {
-  font-size: 64px;
+  color: var(--accent-orange);
   animation: shake 0.5s ease-in-out;
 }
 
@@ -27,15 +27,16 @@
 }
 
 .error-title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #1d1d1f;
+  color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .error-message {
-  font-size: 14px;
-  color: #86868b;
+  font-size: 0.938rem;
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
   max-width: 400px;
@@ -46,21 +47,21 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #007aff 0%, #0051d5 100%);
+  background: var(--primary-gradient);
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.938rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(79, 124, 255, 0.3);
   margin-top: 8px;
 }
 
 .error-retry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+  box-shadow: 0 6px 16px rgba(79, 124, 255, 0.4);
 }
 
 .error-inline {
@@ -68,36 +69,38 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  background: rgba(255, 59, 48, 0.08);
-  border: 1px solid rgba(255, 59, 48, 0.2);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 12px;
   margin: 16px 0;
 }
 
 .error-icon-small {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  color: var(--accent-red);
 }
 
 .error-text {
   flex: 1;
-  font-size: 14px;
-  color: #ff3b30;
+  font-size: 0.875rem;
+  color: var(--accent-red);
   font-weight: 500;
 }
 
 .error-retry-btn-small {
   padding: 8px 16px;
-  background: #ff3b30;
+  background: var(--accent-red);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 0.813rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .error-retry-btn-small:hover {
-  background: #d62d21;
+  background: #dc2626;
   transform: translateY(-1px);
 }

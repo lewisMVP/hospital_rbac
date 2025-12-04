@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icons } from './Icons';
 import './ConfirmModal.css';
 
 const ConfirmModal = ({ 
@@ -9,16 +10,16 @@ const ConfirmModal = ({
   message, 
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  type = 'danger' // 'danger' | 'warning' | 'info'
+  type = 'danger'
 }) => {
   if (!isOpen) return null;
 
   const getIcon = () => {
     switch (type) {
-      case 'danger': return '🗑️';
-      case 'warning': return '⚠️';
-      case 'info': return 'ℹ️';
-      default: return '❓';
+      case 'danger': return Icons.trash;
+      case 'warning': return Icons.alertTriangle;
+      case 'info': return Icons.info;
+      default: return Icons.alertCircle;
     }
   };
 
@@ -34,11 +35,11 @@ const ConfirmModal = ({
   return (
     <div className="confirm-overlay" onClick={onClose}>
       <div className="confirm-content" onClick={(e) => e.stopPropagation()}>
-        <div className="confirm-icon">{getIcon()}</div>
+        <div className={`confirm-icon ${type}`}>{getIcon()}</div>
         <h3 className="confirm-title">{title}</h3>
         <p className="confirm-message">{message}</p>
         <div className="confirm-actions">
-          <button className="btn-cancel" onClick={onClose}>
+          <button className="btn-secondary" onClick={onClose}>
             {cancelText}
           </button>
           <button className={`btn-confirm ${getButtonClass()}`} onClick={onConfirm}>
